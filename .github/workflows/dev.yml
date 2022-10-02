@@ -25,7 +25,7 @@ jobs:
       # THESE are the ones that are deployment-specific.
       IN_CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
       IN_REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-      IN_SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
+      IN_SCRIPT_ID: ${{ secrets.SCRIPT_ID_DEV }}
       IN_DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }} # optional.
-      IN_PARENT_ID: ${{ secrets.PARENT_ID }} # optional.
-      IN_CONFIG_DATA: ${{ secrets.CONFIG_DATA }} # optional.
+      IN_PARENT_ID: ${{ secrets.PARENT_ID_DEV }} # optional.
+      IN_CONFIG_DATA: ${{ secrets.CONFIG_DATA_DEV }} # optional.
