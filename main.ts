@@ -117,6 +117,7 @@ function copyToSubfolderByArray_(document: GoogleAppsScript.Drive.File, parentFo
             let newTarget = targetFolder.createFolder(subFolderIterant[0])
             targetFolder = newTarget
         }
+        subFolderIterant.shift()
     }
 
     return document.makeCopy(newName,targetFolder)
