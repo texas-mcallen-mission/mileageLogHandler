@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "lib": ["ESNext"],
+        "target": "ES6",
+        "types": [
+            "google-apps-script"
+        ],
+        "outDir": "./ts",
+        "rootDir": "./"
+        
+    }
+}
