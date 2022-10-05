@@ -3,7 +3,7 @@ name: caragarra main branch
 on:
   workflow_dispatch:
   push:
-    branches: [test]
+    branches: [dev]
   release:
     types: [published]
   schedule:
