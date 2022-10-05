@@ -109,7 +109,13 @@ function modifyTitlePage(presentation: GoogleAppsScript.Slides.Presentation,year
     if (slides.length > 0) {
         let baseslide = slides[0]
         let subtitleString = month + " " + String(year)
-        baseslide.replaceAllText("DATE_STRING", subtitleString, true)
-        baseslide.replaceAllText("Click to add subtitle", subtitleString)
+        try {
+            baseslide.replaceAllText("DATE_STRING", subtitleString, true)
+            baseslide.replaceAllText("Click to add subtitle", subtitleString)
+            
+        } catch (error) {
+            console.warn("below error is because it couldn't find something to replace.")
+            console.log(error)
+        }
     }
 }
