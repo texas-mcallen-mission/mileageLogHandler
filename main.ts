@@ -1,4 +1,4 @@
-let sheetConfig: sheetDataEntry = {
+let responseConfig: sheetDataEntry = {
     tabName: "Form Responses",
     headerRow: 0,
     includeSoftcodedColumns: true,
@@ -49,6 +49,28 @@ let sheetConfig: sheetDataEntry = {
         log_pics: 43,
     }
 };
+
+interface slideDataEntry extends kiDataEntry {
+    gasCard: number,
+    logPageIdList: string,
+    receiptPageIdList: string,
+    month: string,
+    year:string | number
+}
+
+let datastoreConfig: sheetDataEntry = {
+    tabName: "slideData",
+    headerRow: 0,
+    includeSoftcodedColumns: true,
+    initialColumnOrder: {
+        gasCard: 0,
+        logPageIdList: 1,
+        receiptPageIdList: 2,
+        month: 3,
+        year: 4,
+
+    }
+}
 
 interface folderReturn {
     id: string,
@@ -139,7 +161,7 @@ function getDocumentFromURL_(url):GoogleAppsScript.Drive.File | null {
     }
 }
 function moveNewPhotosToFolders() {
-    let rsdIn1 = new RawSheetData(sheetConfig)
+    let rsdIn1 = new RawSheetData(responseConfig)
     let log_responses = new SheetData(rsdIn1)
 
     let data = log_responses.getData()

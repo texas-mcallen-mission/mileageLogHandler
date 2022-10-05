@@ -1,38 +1,45 @@
-function slideTester() {
-    let slideID = "1bMgAWOXlBHZwpU5NuvrPvGV6dxoDB1B7Vjw4xdQ3tp0";
 
-    let presentation = SlidesApp.openById(slideID);
+function tester() {
+    // load up the logbook we need
+    let presentation = getLogbook(2022, "August");
+    // load up the data we're going to work with 
+    let slidedataStore: sheetDataEntry = datastoreConfig
+    let slideData = new SheetData(new RawSheetData(slidedataStore))
+    let logResponseDatastore:sheetDataEntry = responseConfig
+    let entryData = new SheetData(new RawSheetData(logResponseDatastore))
 
-    let slides = presentation.getSlides();
+    let entryClass = new kiDataClass(entryData.getData())
+    // save where we are with responses so that we don't wind up with duplicates.  Marking as pulled happens at the very very end.
+    let responseQTY = entryClass.end.length
 
-    let targetSlide = presentation.appendSlide();
 
-    console.log(targetSlide.getObjectId());
-    console.log(targetSlide.getPageElements());
-    targetSlide.insertTextBox(targetSlide.getObjectId(), 20, 30, 400, 200);
-    for (let slide of slides) {
-        console.log(slide);
-        let notes = slide.getNotesPage();
-        console.log(notes);
-        console.log(notes.toString());
+    // filter to only new responses, and then add them to the correct thing.
+    let newResponses = entryClass.removeMatching("pulled", true)
+
+
+
+    for (let response of newResponses) {
+        // build index, because it gets out of date
     }
+
+    
+}
+
+function addEntry(responseData:slideDataEntry,targetPresentation:GoogleAppsScript.Slides.Presentation,kiDataForIndexing:slideDataEntry[]) {
+    // Step 1: build index to figure out where we're supposed to stick data
+
+    // WYLO: trying to figure out the right order for how to do this 
+
+    /*
+        I think the best way to do this is have addEntry return a new slideDataEntry object to add to to the end of the ki data stuff
+        every entry can *also* get immediately saved into the sheet so that if I experience a crash on a future entry in the loop I don't lose progress
+        seems like a fairly bulletproof way to do it??
+
+
+    */
 }
 
 
-function getSlideFolder(): GoogleAppsScript.Drive.Folder {
-    let baseFolder = getBaseFolder();
-    let photoFolderName = "Print-Ready";
-    let folderTest = baseFolder.getFoldersByName(photoFolderName);
-    // Check to see if there's a folder with a matching name
-    if (folderTest.hasNext()) {
-        let folder = folderTest.next();
-        return folder;
-    }
-    else {
-        let folder = baseFolder.createFolder(photoFolderName);
-        return folder;
-    }
-}
 
 /* FLOW
 Open folder with documents in it OR load from a sheet that has that data in it
@@ -56,7 +63,7 @@ For entry {gas | logbook } that hasn't been logged (or all of them if there's no
 
 */
 
-function getPresentation(year:string|number,month:string):GoogleAppsScript.Slides.Presentation {
+function getLogbook(year:string|number,month:string):GoogleAppsScript.Slides.Presentation {
     // step 1: get the containing folder
     let parentFolder = getSlideFolder()
 
@@ -100,9 +107,7 @@ function getPresentation(year:string|number,month:string):GoogleAppsScript.Slide
 
 }
 
-function tester() {
-    let presentation = getPresentation(2022, "August")
-}
+
 
 function modifyTitlePage(presentation: GoogleAppsScript.Slides.Presentation,year:string|number,month:string) {
     let slides = presentation.getSlides()
@@ -121,5 +126,21 @@ function modifyTitlePage(presentation: GoogleAppsScript.Slides.Presentation,year
             console.warn("below error is because it couldn't find something to replace.")
             console.log(error)
         }
+    }
+}
+
+
+function getSlideFolder(): GoogleAppsScript.Drive.Folder {
+    let baseFolder = getBaseFolder();
+    let photoFolderName = "Print-Ready";
+    let folderTest = baseFolder.getFoldersByName(photoFolderName);
+    // Check to see if there's a folder with a matching name
+    if (folderTest.hasNext()) {
+        let folder = folderTest.next();
+        return folder;
+    }
+    else {
+        let folder = baseFolder.createFolder(photoFolderName);
+        return folder;
     }
 }
