@@ -111,6 +111,10 @@ function modifyTitlePage(presentation: GoogleAppsScript.Slides.Presentation,year
         let subtitleString = month + " " + String(year)
         try {
             baseslide.replaceAllText("DATE_STRING", subtitleString, true)
+        } catch (error) {
+            console.log(error)
+        }
+        try {
             baseslide.replaceAllText("Click to add subtitle", subtitleString)
             
         } catch (error) {
