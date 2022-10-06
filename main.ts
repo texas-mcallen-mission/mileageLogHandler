@@ -50,13 +50,6 @@ let responseConfig: sheetDataEntry = {
     }
 };
 
-interface slideDataEntry extends kiDataEntry {
-    gasCard: number,
-    logPageIdList: string,
-    receiptPageIdList: string,
-    month: string,
-    year:string | number
-}
 
 let datastoreConfig: sheetDataEntry = {
     tabName: "slideData",
@@ -70,11 +63,6 @@ let datastoreConfig: sheetDataEntry = {
         year: 4,
 
     }
-}
-
-interface folderReturn {
-    id: string,
-    folder: GoogleAppsScript.Drive.Folder
 }
 
 function getBaseFolder(): GoogleAppsScript.Drive.Folder {
@@ -103,25 +91,6 @@ function getPhotoFolder(): GoogleAppsScript.Drive.Folder {
     }
 }
 
-interface log_data extends kiDataEntry {
-    timestamp: string,
-    area_name: string,
-    email: string,
-    report_month: string,
-    report_year: string | number,
-    pulled: boolean | "" | null,
-    car_year: number,
-    car_make: string,
-    car_model: string,
-    car_lpn: string,
-    car_vin_five: string | number,
-    card_number: string,
-    odo_start: number,
-    odo_end: number,
-    mile_sum: number,
-    gas_pics: string,
-    log_pics: string,
-}
 
 
 // takes a folder, a drive Document, and a 2d array of subfolders, copy a thing.  Returns a GoogleAppsScript.Drive.File of the copied object.
@@ -146,8 +115,14 @@ function copyToSubfolderByArray_(document: GoogleAppsScript.Drive.File, parentFo
 
 }
 
-function getIdFromUrl_(url: string):string {
-    return url.match(/[-\w]{25,}(?!.*[-\w]{25,})/).toString();
+function getIdFromUrl_(url: string): string {
+    let regexData = url.match(/[-\w]{25,}(?!.*[-\w]{25,})/) 
+    if (regexData == null) {
+        return ""
+    } else {
+        return regexData.toString()
+    }
+
 }
 
 function getDocumentFromURL_(url):GoogleAppsScript.Drive.File | null {

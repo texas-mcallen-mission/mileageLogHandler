@@ -4,7 +4,7 @@ function tester() {
     let presentation = getLogbook(2022, "August");
     // load up the data we're going to work with 
     let slidedataStore: sheetDataEntry = datastoreConfig
-    let slideData = new SheetData(new RawSheetData(slidedataStore))
+    let slideSheetData = new SheetData(new RawSheetData(slidedataStore))
     let logResponseDatastore:sheetDataEntry = responseConfig
     let entryData = new SheetData(new RawSheetData(logResponseDatastore))
 
@@ -14,18 +14,35 @@ function tester() {
 
 
     // filter to only new responses, and then add them to the correct thing.
-    let newResponses = entryClass.removeMatching("pulled", true)
+    //@ts-ignore not sure how to guarantee that this will have all of the req'd fields, but it should by definii
+    let newResponses:slideDataEntry[] = entryClass.removeMatching("pulled", true)
 
-
+    let slideDataObj: kiDataClass = new kiDataClass(slideSheetData.getData())
+    //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
+    let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
 
     for (let response of newResponses) {
         // build index, because it gets out of date
+
+        let newSlides: slideDataEntry = addEntry(response, presentation, slideData)
+
     }
 
     
 }
 
-function addEntry(responseData:slideDataEntry,targetPresentation:GoogleAppsScript.Slides.Presentation,kiDataForIndexing:slideDataEntry[]) {
+
+function addEntry(responseData: slideDataEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, kiDataForIndexing: slideDataEntry[]):slideDataEntry {
+
+    let outEntry: slideDataEntry = {
+        gasCard: 0,
+        logPageIdList: '',
+        receiptPageIdList: '',
+        month: '',
+        year: '',
+        logPageIdArray: [],
+        receiptPageIdArray: []
+    };
     // Step 1: build index to figure out where we're supposed to stick data
 
     // WYLO: trying to figure out the right order for how to do this 
@@ -37,6 +54,12 @@ function addEntry(responseData:slideDataEntry,targetPresentation:GoogleAppsScrip
 
 
     */
+
+    /*
+        WYLO 2: not done defining types on my way to TS-verified results
+
+    */
+
 }
 
 
