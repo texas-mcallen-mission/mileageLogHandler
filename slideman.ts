@@ -20,19 +20,68 @@ function tester() {
     let slideDataObj: kiDataClass = new kiDataClass(slideSheetData.getData())
     //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
     let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
-
+    let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
     for (let response of newResponses) {
         // build index, because it gets out of date
 
-        let newSlides: slideDataEntry = addEntry(response, presentation, slideData)
-
+        let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData)
+        slideData.push(newSlides)
     }
 
-    
+
 }
 
+function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string):positionalIndex {
+    let output:positionalIndex = {};
+    for (let i = 0; i > data.length; i++){
+        if (data[i].hasOwnProperty(keyToBaseOffOf) && +data[i][keyToBaseOffOf] != -1) {
+            output[+data[i][keyToBaseOffOf]] = data[i] 
+        }
+    }
+    return output
+}
 
-function addEntry(responseData: slideDataEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, kiDataForIndexing: slideDataEntry[]):slideDataEntry {
+function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentation, position: number, slideData:positionalIndex):string|null {
+    
+    // thanks to this guy for this little conversion
+    // https://bobbyhadz.com/blog/javascript-convert-array-of-strings-to-array-of-numbers#:~:text=To%20convert%20an%20array%20of,new%20array%20containing%20only%20numbers.
+    let keys = Object.keys(slideData).map(str => {
+        return Number(str);
+    });
+    
+    let bestCandidate = Infinity;
+
+    // and thanks to these people for this part:
+    // https://stackoverflow.com/questions/54554384/get-closest-but-higher-number-in-an-array
+
+    //get rid of everything bigger (or smaller???)
+    // TODO greater than or equal to?  Need to test with two of the same gas card for certainty,  kinda depends on if I want second entries before or after the first ones
+    const higherCandidates = keys.filter(candidate => candidate > position)
+    
+    // loop through numbers and checks to see if next number is less bigger but still bigger
+
+    higherCandidates.forEach(candidate => {
+        if (candidate < bestCandidate) { bestCandidate = candidate; }
+    }
+
+    )
+
+    if (bestCandidate != Infinity) {
+        if (slideData[bestCandidate].hasOwnProperty("logPageIdList")){
+            let outData: string[] = slideData[bestCandidate]["logPageIdList"].split(",")
+            if (outData.length > 0 && outData[0] != "") {
+                return outData[0]
+            }
+        }
+    }
+    // basically fat ELSE return, because the function should break at this point.
+    return null
+
+
+
+}
+
+function addSlidesForEntry(responseData: slideDataEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
 
     let outEntry: slideDataEntry = {
         gasCard: 0,
@@ -41,19 +90,20 @@ function addEntry(responseData: slideDataEntry, targetPresentation: GoogleAppsSc
         month: '',
         year: '',
         logPageIdArray: [],
-        receiptPageIdArray: []
+        receiptPageIdArray: [],
+        startPosition:-1,
     };
+
     // Step 1: build index to figure out where we're supposed to stick data
 
     // WYLO: trying to figure out the right order for how to do this 
 
-    /*
-        I think the best way to do this is have addEntry return a new slideDataEntry object to add to to the end of the ki data stuff
-        every entry can *also* get immediately saved into the sheet so that if I experience a crash on a future entry in the loop I don't lose progress
-        seems like a fairly bulletproof way to do it??
+    // WYLO 2022-10-06 : need to break this out into a function properly so that I can reuse things cleanly.  Might have two functions, one for gas & one for logs, or an internal if for switching between the two.
+    let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex)
+    if (postSlideId) {
+        let test = targetPresentation.getPageElementById(postSlideId)
 
-
-    */
+    }
 
     /*
         WYLO 2: not done defining types on my way to TS-verified results

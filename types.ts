@@ -1,5 +1,15 @@
 
 
+/**
+ *  An index of kiDataEntries that's ordered by a key.  This is used to figure out where something should be inserted in the sheets.1  
+ *
+ * @interface positionalIndex
+ */
+interface positionalIndex {
+    [index: number]: kiDataEntry;
+}
+
+
 
 function convertKisToSlideEntries(entries: kiDataEntry[]): slideDataEntry[] {
     let outData: slideDataEntry[] = [];
@@ -16,7 +26,8 @@ function convertKiToSlide(entry: kiDataEntry) {
         month: '',
         year: '',
         logPageIdArray: [],
-        receiptPageIdArray: []
+        receiptPageIdArray: [],
+        startPosition:0,
     };
     for (let key in outEntry) {
         if (entry.hasOwnProperty(key)) {
@@ -167,6 +178,7 @@ function convertKiEntryToLogResponse(entry: kiDataEntry): logResponseEntry {
 
 interface slideDataEntry extends kiDataEntry {
     gasCard: number,
+    startPosition:number,
     logPageIdList: string,
     receiptPageIdList: string,
     month: string,
