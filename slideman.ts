@@ -125,7 +125,8 @@ function addSlidesForEntry(responseData: kiDataEntry, targetPresentation: Google
     let logSlides: GoogleAppsScript.Slides.Slide[] = []
     
     for (let entry of responseData.logPageIdArray) {
-        let gasSlide = createNewSlide(targetPresentation, postSlideId,logSlides.length)
+        let gasSlide = createNewSlide(targetPresentation, postSlideId)
+            // , logSlides.length)
         
     }
 
