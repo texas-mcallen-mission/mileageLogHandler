@@ -81,7 +81,28 @@ function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentati
 
 }
 
-function addSlidesForEntry(responseData: slideDataEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
+function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation,preSlide:string|null):GoogleAppsScript.Slides.Slide {
+    let outSlide:GoogleAppsScript.Slides.Slide
+    if (preSlide != null) {
+        outSlide = targetPresentation.insertSlide(+preSlide)
+    } else {
+        outSlide = targetPresentation.appendSlide()
+    }
+
+    outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,20,20)
+    return outSlide
+}
+
+function loadImageFromId(id:string){}
+
+function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: kiDataClass,index:number) {
+    // Step 1: Add Photo
+    
+    // let photo = gasSlide.insertImage()
+    // WYL0 2022-10-07 : Need to figure out how to load images.  :)
+}
+
+function addSlidesForEntry(responseData: kiDataEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
 
     let outEntry: slideDataEntry = {
         gasCard: 0,
@@ -100,16 +121,20 @@ function addSlidesForEntry(responseData: slideDataEntry, targetPresentation: Goo
 
     // WYLO 2022-10-06 : need to break this out into a function properly so that I can reuse things cleanly.  Might have two functions, one for gas & one for logs, or an internal if for switching between the two.
     let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex)
-    if (postSlideId) {
-        let test = targetPresentation.getPageElementById(postSlideId)
-
+    
+    let logSlides: GoogleAppsScript.Slides.Slide[] = []
+    
+    for (let entry of responseData.logPageIdArray) {
+        let gasSlide = createNewSlide(targetPresentation, postSlideId,logSlides.length)
+        
     }
+
 
     /*
         WYLO 2: not done defining types on my way to TS-verified results
 
     */
-
+    
 }
 
 
