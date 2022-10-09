@@ -21,6 +21,7 @@ function tester() {
     //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
     let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
     let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
+    
     for (let response of newResponses) {
         // build index, because it gets out of date
 
@@ -95,14 +96,17 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
 
 function loadImageFromId(id:string){}
 
-function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: kiDataClass,index:number) {
+function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry,imageUrl:string,index:number) {
     // Step 1: Add Photo
     
     // let photo = gasSlide.insertImage()
     // WYL0 2022-10-07 : Need to figure out how to load images.  :)
+
+    let photo = gasSlide.insertImage(imageUrl)
+    photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 }
 
-function addSlidesForEntry(responseData: kiDataEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
+function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
 
     let outEntry: slideDataEntry = {
         gasCard: 0,
@@ -123,10 +127,15 @@ function addSlidesForEntry(responseData: kiDataEntry, targetPresentation: Google
     let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex)
     
     let logSlides: GoogleAppsScript.Slides.Slide[] = []
-    
-    for (let entry of responseData.logPageIdArray) {
+    let logPages = String(responseData.log_pics).trim().split(",")
+    let iterant = 0
+    for (let entry of logPages) {
+        
         let gasSlide = createNewSlide(targetPresentation, postSlideId)
-            // , logSlides.length)
+        gasSlideEditor(gasSlide, responseData, entry,iterant)
+
+        iterant += 1
+        // , logSlides.length)
         
     }
 
