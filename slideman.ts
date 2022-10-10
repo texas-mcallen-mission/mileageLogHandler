@@ -94,7 +94,24 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
     return outSlide
 }
 
-function loadImageFromId(id:string){}
+function loadImageFromId(id: string) {}
+
+enum orientEnum {
+    landscape,
+    portrait
+}
+function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
+    // photo.setLeft(20)
+    if (orientation == orientEnum.landscape) {
+        if (photo.getHeight() > photo.getWidth()) {
+            photo.setRotation(90)
+        }
+    }
+    photo.setHeight(50)
+    photo.setLeft(45)
+    photo.setWidth(1000)
+
+}
 
 function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry,imageUrl:string,index:number) {
     // Step 1: Add Photo
@@ -108,7 +125,9 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let imageBlob = image.getBlob()
     // let imageClass = loadImageFromId(imageId)
     let photo = gasSlide.insertImage(imageBlob)
-    photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
+    alignImage(photo, orientEnum.portrait)
+    // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
+
 }
 
 function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
