@@ -90,7 +90,7 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
         outSlide = targetPresentation.appendSlide()
     }
 
-    outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,200,20)
+    outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
     return outSlide
 }
 
