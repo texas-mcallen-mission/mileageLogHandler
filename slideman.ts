@@ -90,7 +90,7 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
         outSlide = targetPresentation.appendSlide()
     }
 
-    outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,20,20)
+    outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,200,20)
     return outSlide
 }
 
@@ -102,9 +102,12 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     // let photo = gasSlide.insertImage()
     // WYL0 2022-10-07 : Need to figure out how to load images.  :)
     let imageId = getIdFromUrl_(imageUrl)
-    let imageURL = "drive.google.com/file/d/" + imageId
+    // let imageURL = "https://drive.google.com/file/d/" + imageId
+    let image = DriveApp.getFileById(imageId)
+    // let metaData = image.getMimeType()
+    let imageBlob = image.getBlob()
     // let imageClass = loadImageFromId(imageId)
-    let photo = gasSlide.insertImage(imageURL)
+    let photo = gasSlide.insertImage(imageBlob)
     photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 }
 
