@@ -96,7 +96,7 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
 
 function loadImageFromId(id: string) {}
 
-enum orientEnum {
+    enum orientEnum {
     landscape,
     portrait
 }
@@ -107,9 +107,10 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum)
             photo.setRotation(90)
         }
     }
-    photo.setHeight(50)
+    // photo.setHeight(50)
+    photo.setTop(50)
     photo.setLeft(45)
-    photo.setWidth(1000)
+    photo.setWidth(750)
 
 }
 
