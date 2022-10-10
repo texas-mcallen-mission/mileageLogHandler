@@ -101,8 +101,10 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     
     // let photo = gasSlide.insertImage()
     // WYL0 2022-10-07 : Need to figure out how to load images.  :)
-
-    let photo = gasSlide.insertImage(imageUrl)
+    let imageId = getIdFromUrl_(imageUrl)
+    let imageURL = "drive.google.com/file/d/" + imageId
+    // let imageClass = loadImageFromId(imageId)
+    let photo = gasSlide.insertImage(imageURL)
     photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 }
 
