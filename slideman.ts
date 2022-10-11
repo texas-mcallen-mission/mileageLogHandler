@@ -112,6 +112,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum)
         }
     }
     // photo.setHeight(50)
+    alignImage(photo, orientEnum.portrait)
     photo.setTop(50)
     photo.setLeft(45)
     photo.setWidth(750)
@@ -130,7 +131,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let imageBlob = image.getBlob()
     // let imageClass = loadImageFromId(imageId)
     let photo = gasSlide.insertImage(imageBlob)
-    alignImage(photo, orientEnum.portrait)
+    
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
 }
