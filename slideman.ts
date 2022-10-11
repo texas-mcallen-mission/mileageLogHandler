@@ -100,7 +100,7 @@ function loadImageFromId(id: string) {}
     landscape,
     portrait
 }
-function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
+function alignLog(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
     // photo.setLeft(20)
     if (orientation == orientEnum.landscape) {
         if (photo.getHeight() > photo.getWidth()) {
@@ -112,7 +112,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum)
         }
     }
     // photo.setHeight(50)
-    alignImage(photo, orientEnum.portrait)
+    
     photo.setTop(50)
     photo.setLeft(45)
     photo.setWidth(750)
@@ -131,8 +131,10 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let imageBlob = image.getBlob()
     // let imageClass = loadImageFromId(imageId)
     let photo = gasSlide.insertImage(imageBlob)
-    
+    alignLog(photo, orientEnum.portrait)
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
+
+
 
 }
 
