@@ -109,8 +109,8 @@ function alignLog(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
     } else {
         if (photo.getWidth() > photo.getHeight()) {
             photo.setRotation(270)
-            photo.setTop(45);
-            photo.setLeft(1000);
+            photo.setTop(450);
+            photo.setLeft(-50);
             photo.setWidth(750)
         } else {
             photo.setTop(50);
