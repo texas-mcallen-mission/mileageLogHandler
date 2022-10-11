@@ -106,6 +106,10 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum)
         if (photo.getHeight() > photo.getWidth()) {
             photo.setRotation(90)
         }
+    } else {
+        if (photo.getWidth() > photo.getHeight()) {
+            photo.setRotation(90)
+        }
     }
     // photo.setHeight(50)
     photo.setTop(50)
