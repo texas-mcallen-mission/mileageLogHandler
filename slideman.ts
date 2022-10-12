@@ -90,7 +90,7 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
         outSlide = targetPresentation.appendSlide()
     }
 
-    outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
+    // outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
     return outSlide
 }
 
@@ -100,22 +100,23 @@ function loadImageFromId(id: string) {}
     landscape,
     portrait
 }
-function alignLog(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
+function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
     // photo.setLeft(20)
     if (orientation == orientEnum.landscape) {
         if (photo.getHeight() > photo.getWidth()) {
             photo.setRotation(90)
+        } else {
         }
     } else {
         if (photo.getWidth() > photo.getHeight()) {
             photo.setRotation(270)
-            photo.setTop(450);
+            photo.setTop(200);
             photo.setLeft(-50);
-            photo.setWidth(750)
+            photo.setWidth(500)
         } else {
-            photo.setTop(50);
+            photo.setTop(200);
             photo.setLeft(45);
-            photo.setWidth(750)
+            photo.setWidth(500)
         }
     }
     // photo.setHeight(50)
@@ -136,7 +137,12 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let imageBlob = image.getBlob()
     // let imageClass = loadImageFromId(imageId)
     let photo = gasSlide.insertImage(imageBlob)
-    alignLog(photo, orientEnum.portrait)
+    alignImage(photo, orientEnum.portrait)
+    let newline = "\u00a0"
+    let infoString = "AreaName:" + responseData.area_name + newline
+        + "gascard" + responseData.card_number + newline
+        + "total mileage" + responseData.mile_sum
+    gasSlide.insertTextBox(infoString,10,10,500,120)
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
 
