@@ -116,7 +116,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum)
         } else {
             photo.setTop(200);
             photo.setLeft(45);
-            photo.setWidth(500)
+            photo.setHeight(500)
         }
     }
     // photo.setHeight(50)
@@ -138,10 +138,13 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     // let imageClass = loadImageFromId(imageId)
     let photo = gasSlide.insertImage(imageBlob)
     alignImage(photo, orientEnum.portrait)
-    let newline = "\u00a0"
-    let infoString = "AreaName:" + responseData.area_name + newline
-        + "gascard" + responseData.card_number + newline
-        + "total mileage" + responseData.mile_sum
+    let newline = "\n"
+    let infoString = "AreaName: " + responseData.area_name + newline
+        + "gascard: " + responseData.card_number + newline
+        + "Miles Used: " + responseData.mile_sum
+    if (responseData.has_forgiveness) {
+        infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
+    }
     gasSlide.insertTextBox(infoString,10,10,500,120)
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
