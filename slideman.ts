@@ -142,10 +142,11 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let infoString = "AreaName: " + responseData.area_name + newline
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum
-    if (responseData.has_forgiveness) {
+    if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
     }
-    gasSlide.insertTextBox(infoString,10,10,500,120)
+    let infoBox = gasSlide.insertTextBox(infoString,10,10,500,120)
+    // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
 
