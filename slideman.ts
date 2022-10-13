@@ -199,7 +199,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
     }
     let infoBoxData = {
-        width: sL.width - 2 * sL.borderBetween,
+        width: sL.width - 2 * sL.borderPx,
         height: 200
     }
     let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height)
@@ -207,7 +207,8 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     
 
     
-    alignImage(photo, orientEnum.portrait)
+    let minHeight = infoBoxData.height + sL.borderPx*2
+    alignImage(photo, orientEnum.portrait,minHeight,sL)
     // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
