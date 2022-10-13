@@ -100,34 +100,66 @@ function loadImageFromId(id: string) {}
     landscape,
     portrait
 }
-function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
+function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum,minHeight:number,sL:slideLayoutData) {
     // photo.setLeft(20)
-    let width = photo.getWidth()
-    let height = photo.getHeight()
+
+    let availableHeight = sL.height - minHeight - sL.borderPx
+
+    let imageWidth = photo.getWidth()
+    let imageHeight = photo.getHeight()
     let wasRotated = false
 
     photo.setTop(200);
     photo.setLeft(45);
 
     if (orientation == orientEnum.landscape) {
-        if (height > width) {
+        if (imageHeight > imageWidth) {
             photo.setRotation(90)
+
+            let transient = imageWidth
+            imageWidth = imageHeight
+            imageHeight = transient
             wasRotated = true
         } else {
         }
     } else {
-        if (width > height) {
+        if (imageWidth > imageHeight) {
+            // switches stored values so that my next logic bits are easier
+            let transient = imageWidth;
+            imageWidth = imageHeight;
+            imageHeight = transient
+
+            // rotate image
             photo.setRotation(270)
             wasRotated = true
             // photo.setTop(200);
-            photo.setLeft(-50);
+            // I'll have to figure out a better way to do this bit later:
+            // photo.setLeft(-50);
+            // (It's supposed to realign the photo to the edge...)
             // photo.setWidth(500)
         } else {
-
+            
 
             // photo.setHeight(500)
         }
     }
+
+    // step one: rescale width to be exactly wide enough
+    // photo.scaleWidth(ratio)
+    let maxWidth = sL.width - sL.borderPx * 2
+    let scaleVal = maxWidth / imageWidth
+    photo.scaleHeight(scaleVal)
+    photo.scaleWidth(scaleVal)
+
+    let assumedWidth = Math.floor(scaleVal * imageWidth)
+    if (assumedWidth == photo.getWidth()) {
+        console.log("HOORAY")
+    } else {
+        console.error(assumedWidth, photo.getWidth())
+    }
+
+    imageWidth = photo.getWidth()
+    imageHeight = photo.getHeight()
 
     
     // photo.setHeight(50)
@@ -136,11 +168,22 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum)
 
 }
 
-function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry,imageUrl:string,index:number) {
+interface slideLayoutData {
+    width: number,
+    height: number,
+    borderPx: number
+}
+
+function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl: string, index: number) {
     // Step 1: Add Photo
     
     // let photo = gasSlide.insertImage()
     // WYL0 2022-10-07 : Need to figure out how to load images.  :)
+    let sL:slideLayoutData = {
+        width: 612,
+        height: 793,
+        borderPx:10
+    }
     let imageId = getIdFromUrl_(imageUrl)
     // let imageURL = "https://drive.google.com/file/d/" + imageId
     let image = DriveApp.getFileById(imageId)
@@ -148,15 +191,23 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let imageBlob = image.getBlob()
     // let imageClass = loadImageFromId(imageId)
     let photo = gasSlide.insertImage(imageBlob)
-    alignImage(photo, orientEnum.portrait)
     let newline = "\n"
     let infoString = "AreaName: " + responseData.area_name + newline
-        + "gascard: " + responseData.card_number + newline
-        + "Miles Used: " + responseData.mile_sum
+    + "gascard: " + responseData.card_number + newline
+    + "Miles Used: " + responseData.mile_sum
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
     }
-    let infoBox = gasSlide.insertTextBox(infoString,10,10,500,120)
+    let infoBoxData = {
+        width: sL.width - 2 * sL.borderBetween,
+        height: 200
+    }
+    let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height)
+    console.log(gasSlide.getLayout())
+    
+
+    
+    alignImage(photo, orientEnum.portrait)
     // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
