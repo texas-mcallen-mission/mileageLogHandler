@@ -102,23 +102,34 @@ function loadImageFromId(id: string) {}
 }
 function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum) {
     // photo.setLeft(20)
+    let width = photo.getWidth()
+    let height = photo.getHeight()
+    let wasRotated = false
+
+    photo.setTop(200);
+    photo.setLeft(45);
+
     if (orientation == orientEnum.landscape) {
-        if (photo.getHeight() > photo.getWidth()) {
+        if (height > width) {
             photo.setRotation(90)
+            wasRotated = true
         } else {
         }
     } else {
-        if (photo.getWidth() > photo.getHeight()) {
+        if (width > height) {
             photo.setRotation(270)
-            photo.setTop(200);
+            wasRotated = true
+            // photo.setTop(200);
             photo.setLeft(-50);
-            photo.setWidth(500)
+            // photo.setWidth(500)
         } else {
-            photo.setTop(200);
-            photo.setLeft(45);
-            photo.setHeight(500)
+
+
+            // photo.setHeight(500)
         }
     }
+
+    
     // photo.setHeight(50)
     
 
