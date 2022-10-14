@@ -181,10 +181,12 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     if (wasRotated == true) {
         let anchor = 2
         console.error(anchors[anchor])
-        photo.setLeft(anchors[anchor].x);
-        photo.setTop(anchors[anchor].y);
+        let psuedoX = imageCenterX - (imageWidth / 2)
+        let psuedoY = imageCenterY - (imageHeight / 2)
+        photo.setLeft(psuedoX);
+        photo.setTop(pseudoY);
     } else {
-        let anchor = 2;
+        let anchor = 0;
         console.warn(anchors[anchor]);
         photo.setLeft(anchors[anchor].x);
         photo.setTop(anchors[anchor].y);
