@@ -176,11 +176,11 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     ]
     // During testing: You should be able to change which corner gets used on rotates by changing the x in anchors[x] fairly easily.
     if (wasRotated == true) {
-        photo.setTop(anchors[2].x);
-        photo.setHeight(anchors[2].y);
+        photo.setLeft(anchors[2].x);
+        photo.setTop(anchors[2].y);
     } else {
-        photo.setTop(anchors[1].x);
-        photo.setHeight(anchors[1].y);
+        photo.setLeft(anchors[1].x);
+        photo.setTop(anchors[1].y);
     }
 }
 
