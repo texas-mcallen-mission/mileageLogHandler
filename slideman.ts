@@ -156,7 +156,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     //      if image is rotated, set anchor point and go from there
 
     let imageCenterX = (sL.width / 2) /*- sL.borderPx*/
-    let imageCenterY = ((sL.height - minHeight)/2) + minHeight
+    let imageCenterY = ((maxHeight)/2) + minHeight
 
     let anchors: coordinate[] = [
         
