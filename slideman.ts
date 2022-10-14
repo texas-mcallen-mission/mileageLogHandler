@@ -159,7 +159,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     //      if image is rotated, set anchor point and go from there
 
     let imageCenterX = (sL.width / 2) /*- sL.borderPx*/
-    let imageCenterY = ((imageBoxHeight)/2) + minHeight + sL.borderPx
+    let imageCenterY = ((imageBoxHeight)/2) + minHeight
 
     let anchors: coordinate[] = [
         
@@ -235,7 +235,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     }
     let infoBoxData = {
         width: sL.width - 2 * sL.borderPx,
-        height: 200
+        height: 100
     }
     let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height)
     console.log(gasSlide.getLayout())
