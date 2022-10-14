@@ -100,7 +100,7 @@ function loadImageFromId(id: string) {}
     landscape,
     portrait
 }
-function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum,minHeight:number,sL:slideLayoutData) {
+function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnum, sL: slideLayoutData, minHeight: number,maxImageHeight?:number) {
     // photo.setLeft(20)
 
     let availableHeight = sL.height - minHeight - sL.borderPx
@@ -109,63 +109,84 @@ function alignImage(photo: GoogleAppsScript.Slides.Image,orientation:orientEnum,
     let imageHeight = photo.getHeight()
     let wasRotated = false
 
-    photo.setTop(200);
-    photo.setLeft(45);
-
-    if (orientation == orientEnum.landscape) {
-        if (imageHeight > imageWidth) {
-            photo.setRotation(90)
-
-            let transient = imageWidth
-            imageWidth = imageHeight
-            imageHeight = transient
-            wasRotated = true
-        } else {
-        }
-    } else {
-        if (imageWidth > imageHeight) {
-            // switches stored values so that my next logic bits are easier
-            let transient = imageWidth;
-            imageWidth = imageHeight;
-            imageHeight = transient
-
-            // rotate image
-            photo.setRotation(270)
-            wasRotated = true
-            // photo.setTop(200);
-            // I'll have to figure out a better way to do this bit later:
-            // photo.setLeft(-50);
-            // (It's supposed to realign the photo to the edge...)
-            // photo.setWidth(500)
-        } else {
-            
-
-            // photo.setHeight(500)
-        }
+    let prWidth: number = imageWidth; // post-rotate width, I need them to be separate because calcs...
+    let prHeight:number = imageHeight
+    // Step 1: Determine if rotation is needed
+    if (imageHeight > imageWidth && orientation == orientEnum.landscape) {
+        wasRotated = true
+        photo.setRotation(90)
+        prWidth = imageHeight
+        prHeight = imageWidth
     }
 
-    // step one: rescale width to be exactly wide enough
-    // photo.scaleWidth(ratio)
-    let maxWidth = sL.width - sL.borderPx * 2
-    let scaleVal = maxWidth / imageWidth
+    // Step 2: Calculate Scale Values by width
+    // if resulting height would be too big, then scale by height instead
+    
+    let maxWidth:number = sL.width - 2 * sL.borderPx
+    let maxHeight:number
+    if (maxImageHeight) {
+        maxHeight = maxImageHeight
+    } else {
+        maxHeight = sL.height - (minHeight + sL.borderPx*2)
+    }
+
+    
+
+    let scaleVal = maxWidth / prWidth
+    if (maxHeight < scaleVal * prHeight) {
+        scaleVal = maxHeight / prHeight
+    }
+
+    prWidth = prWidth * scaleVal
+    prHeight = prHeight * scaleVal
+
+
+    // Step 3: Set scale for image
     photo.scaleHeight(scaleVal)
     photo.scaleWidth(scaleVal)
 
-    let assumedWidth = Math.floor(scaleVal * imageWidth)
-    if (assumedWidth == photo.getWidth()) {
-        console.log("HOORAY")
+
+
+    // Step 4: Calculate & set position for image
+    //      if image is rotated, set anchor point and go from there
+
+    let imageCenterX = (sL.width / 2) - sL.borderPx
+    let imageCenterY = minHeight + sL.borderPx + (prHeight / 2)
+
+    let a1X = imageCenterX - (prWidth / 2)
+    let a1Y = imageCenterY - (prHeight / 2)
+    let anchors: coordinate[] = [
+        
+        {
+            x: imageCenterX - (prWidth / 2),
+            y: imageCenterY - (prHeight / 2)
+        },
+        {
+            x: imageCenterX + (prWidth / 2),
+            y: imageCenterY - (prHeight / 2)
+        },
+        {
+            x: imageCenterX - (prWidth / 2),
+            y: imageCenterY + (prHeight / 2)
+        },
+        {
+            x: imageCenterX + (prWidth / 2),
+            y: imageCenterY + (prHeight / 2)
+        }
+    ]
+    // During testing: You should be able to change which corner gets used on rotates by changing the x in anchors[x] fairly easily.
+    if (wasRotated == true) {
+        photo.setTop(anchors[2].x);
+        photo.setHeight(anchors[2].y);
     } else {
-        console.error(assumedWidth, photo.getWidth())
+        photo.setTop(anchors[1].x);
+        photo.setHeight(anchors[1].y);
     }
+}
 
-    imageWidth = photo.getWidth()
-    imageHeight = photo.getHeight()
-
-    
-    // photo.setHeight(50)
-    
-
-
+interface coordinate {
+    x: number,
+    y:number
 }
 
 interface slideLayoutData {
@@ -208,7 +229,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     
     let minHeight = infoBoxData.height + sL.borderPx*2
-    alignImage(photo, orientEnum.portrait,minHeight,sL)
+    alignImage(photo, orientEnum.portrait, sL, minHeight)
     // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
