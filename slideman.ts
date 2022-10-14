@@ -131,7 +131,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     let maxHeight: number
     let imageBoxHeight : number
     if (maxImageHeight) {
-        maxHeight = maxImageHeight
+        maxHeight = maxImageHeight+ sL.borderPx*2
         imageBoxHeight = maxImageHeight
     } else {
         maxHeight = sL.height - (minHeight + sL.borderPx * 2)
@@ -243,7 +243,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     
     let minHeight = infoBoxData.height + sL.borderPx
-    alignImage(photo, orientEnum.portrait, sL, minHeight)
+    alignImage(photo, orientEnum.portrait, sL, minHeight, 500) // TODO remove height
     // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
