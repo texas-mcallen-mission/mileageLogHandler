@@ -239,7 +239,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     
 
     
-    let minHeight = infoBoxData.height + sL.borderPx*2
+    let minHeight = infoBoxData.height + sL.borderPx
     alignImage(photo, orientEnum.portrait, sL, minHeight)
     // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
