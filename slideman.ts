@@ -15,7 +15,7 @@ function tester() {
 
     // filter to only new responses, and then add them to the correct thing.
     //@ts-ignore not sure how to guarantee that this will have all of the req'd fields, but it should by definii
-    let newResponses:slideDataEntry[] = entryClass.removeMatching("pulled", true)
+    let newResponses:logResponseEntry[] = entryClass.removeMatching("pulled", true)
 
     let slideDataObj: kiDataClass = new kiDataClass(slideSheetData.getData())
     //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
@@ -117,6 +117,11 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
         photo.setRotation(90)
         prWidth = imageHeight
         prHeight = imageWidth
+    } else if (imageWidth > imageHeight && orientation == orientEnum.portrait) {
+        wasRotated = true
+        photo.setRotation(90)
+        prWidth = imageHeight;
+        prHeight = imageWidth        
     }
 
     // Step 2: Calculate Scale Values by width
@@ -176,11 +181,12 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     ]
     // During testing: You should be able to change which corner gets used on rotates by changing the x in anchors[x] fairly easily.
     if (wasRotated == true) {
+        console.warn(anchors[2])
         photo.setLeft(anchors[2].x);
         photo.setTop(anchors[2].y);
     } else {
-        photo.setLeft(anchors[1].x);
-        photo.setTop(anchors[1].y);
+        photo.setLeft(sL.borderPx);
+        photo.setTop(minHeight + sL.borderPx);
     }
 }
 
