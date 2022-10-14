@@ -134,7 +134,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
         maxHeight = maxImageHeight+ sL.borderPx*2
         imageBoxHeight = maxImageHeight
     } else {
-        maxHeight = sL.height - (minHeight + sL.borderPx * 2)
+        maxHeight = sL.height - (minHeight) + sL.borderPx * 2
         imageBoxHeight = (sL.height - minHeight)
     }
 
