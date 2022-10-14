@@ -155,11 +155,9 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     // Step 4: Calculate & set position for image
     //      if image is rotated, set anchor point and go from there
 
-    let imageCenterX = (sL.width / 2) - sL.borderPx
-    let imageCenterY = minHeight + sL.borderPx + (prHeight / 2)
+    let imageCenterX = (sL.width / 2) /*- sL.borderPx*/
+    let imageCenterY = (sL.height - minHeight)/2
 
-    let a1X = imageCenterX - (prWidth / 2)
-    let a1Y = imageCenterY - (prHeight / 2)
     let anchors: coordinate[] = [
         
         {
@@ -181,12 +179,17 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     ]
     // During testing: You should be able to change which corner gets used on rotates by changing the x in anchors[x] fairly easily.
     if (wasRotated == true) {
-        console.warn(anchors[2])
-        photo.setLeft(anchors[2].x);
-        photo.setTop(anchors[2].y);
+        let anchor = 2
+        console.error(anchors[anchor])
+        photo.setLeft(anchors[anchor].x);
+        photo.setTop(anchors[anchor].y);
     } else {
-        photo.setLeft(sL.borderPx);
-        photo.setTop(minHeight + sL.borderPx);
+        let anchor = 2;
+        console.warn(anchors[anchor]);
+        photo.setLeft(anchors[anchor].x);
+        photo.setTop(anchors[anchor].y);
+        // photo.setLeft(sL.borderPx);
+        // photo.setTop(minHeight + sL.borderPx);
     }
 }
 
