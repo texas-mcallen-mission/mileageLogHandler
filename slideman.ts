@@ -128,11 +128,14 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     // if resulting height would be too big, then scale by height instead
     
     let maxWidth:number = sL.width - 2 * sL.borderPx
-    let maxHeight:number
+    let maxHeight: number
+    let imageBoxHeight : number
     if (maxImageHeight) {
         maxHeight = maxImageHeight
+        imageBoxHeight = maxImageHeight
     } else {
-        maxHeight = sL.height - (minHeight + sL.borderPx*2)
+        maxHeight = sL.height - (minHeight + sL.borderPx * 2)
+        imageBoxHeight = (sL.height - minHeight)
     }
 
     
@@ -156,7 +159,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     //      if image is rotated, set anchor point and go from there
 
     let imageCenterX = (sL.width / 2) /*- sL.borderPx*/
-    let imageCenterY = ((maxHeight)/2) + minHeight
+    let imageCenterY = ((imageBoxHeight)/2) + minHeight + sL.borderPx
 
     let anchors: coordinate[] = [
         
