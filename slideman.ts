@@ -20,14 +20,18 @@ function tester() {
     let slideDataObj: kiDataClass = new kiDataClass(slideSheetData.getData())
     //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
     let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
-    let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
+    let newData:slideDataEntry[] = []
+    // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
     
     for (let response of newResponses) {
         // build index, because it gets out of date
 
         let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData)
         slideData.push(newSlides)
+        newData.push(newSlides)
     }
+    slideSheetData.insertData(newData)
+    
 
 
 }
@@ -316,19 +320,28 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         startPosition:-1,
     };
 
+    outEntry.gasCard = +responseData.card_number
+    outEntry.logPageIdList = String(responseData.log_pics)
+    outEntry.receiptPageIdList = String(responseData.gas_pics)
+    outEntry.month = responseData.report_month
+    outEntry.year = responseData.report_year
+    
     // Step 1: build index to figure out where we're supposed to stick data
-
+    
     // WYLO: trying to figure out the right order for how to do this 
-
+    
     // WYLO 2022-10-06 : need to break this out into a function properly so that I can reuse things cleanly.  Might have two functions, one for gas & one for logs, or an internal if for switching between the two.
     let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex)
+    // outEntry.startPosition = positionalIndex
     
     let logSlides: GoogleAppsScript.Slides.Slide[] = []
-    let logPages = String(responseData.log_pics).trim().split(",")
+    let logPages = outEntry.logPageIdList.trim().split(",")
+    outEntry.logPageIdArray = logPages
     let iterant = 0
     for (let entry of logPages) {
         
         let logSlide = createNewSlide(targetPresentation, postSlideId)
+        
         logSlideEditor(logSlide, responseData, entry,iterant)
 
         iterant += 1
@@ -336,8 +349,9 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         
     }
 
-    let receiptPics = String(responseData.gas_pics).trim().split(",")
-    let receiptIterant = 0
+    let receiptPics = outEntry.receiptPageIdList.trim().split(",")
+    outEntry.receiptPageIdArray = receiptPics
+    // let receiptIterant = 0
     for (let i = 0; i < receiptPics.length; i += 2){
         let entry1url = receiptPics[i]
         let entry2url:string|null = null
@@ -354,7 +368,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         WYLO 2: not done defining types on my way to TS-verified results
 
     */
-    
+    return outEntry
     
 }
 
