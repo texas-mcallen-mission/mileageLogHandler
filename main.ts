@@ -1,5 +1,5 @@
 let responseConfig: sheetDataEntry = {
-    tabName: "Form Responses",
+    tabName: "Form Responses 1",
     headerRow: 0,
     includeSoftcodedColumns: true,
     initialColumnOrder: {

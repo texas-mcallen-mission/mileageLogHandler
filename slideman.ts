@@ -1,6 +1,6 @@
 
 function tester() {
-    // load up the logbook we need
+    // load up the logbook we need - this will need to change to loading EVERY logbook we need in the future ....
     let presentation = getLogbook(2022, "August");
     // load up the data we're going to work with 
     let slidedataStore: sheetDataEntry = datastoreConfig
