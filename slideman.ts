@@ -336,7 +336,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         
     }
 
-    let receiptPics = String(outEntry).trim().split(",")
+    let receiptPics = String(responseData.gas_pics).trim().split(",")
     let receiptIterant = 0
     for (let i = 0; i < receiptPics.length; i += 2){
         let entry1url = receiptPics[i]
