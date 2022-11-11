@@ -172,6 +172,13 @@ function convertKiEntryToLogResponse(entry: kiDataEntry): logResponseEntry {
         if (entry.hasOwnProperty(key)) {
             outData[key] = entry[key];
         }
+        if (key == "has_forgiveness") {
+            if (String(entry[key]).toLowerCase() == "yes") {
+                outData[key] = true;
+            } else {
+                outData[key] = false
+            }
+        }
     }
     return outData;
 }

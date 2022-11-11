@@ -228,6 +228,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum;
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
+
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
     }
@@ -255,7 +256,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         let image2 = DriveApp.getFileById(imageId2)
         let imageBlob2 = image2.getBlob()
         let photo2 = gasSlide.insertImage(imageBlob2)
-        let image2MinHeight = minHeight + maxHeight1
+        let image2MinHeight = minHeight + maxHeight1 + sL.borderPx
         alignImage(photo2, orientEnum.landscape, sL, image2MinHeight)
     }
     // infoBox.getText().
