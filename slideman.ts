@@ -134,7 +134,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
         maxHeight = maxImageHeight+ sL.borderPx*2
         imageBoxHeight = maxImageHeight
     } else {
-        maxHeight = sL.height - (minHeight) + sL.borderPx * 2
+        maxHeight = sL.height - (minHeight) - sL.borderPx
         imageBoxHeight = (sL.height - minHeight)
     }
 
@@ -208,8 +208,60 @@ interface slideLayoutData {
     height: number,
     borderPx: number
 }
+function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl1: string,imageUrl2:string|null, index: number) {
+    // Step 1: Add Photo
 
-function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl: string, index: number) {
+    // let photo = gasSlide.insertImage()
+    // WYL0 2022-10-07 : Need to figure out how to load images.  :)
+    let sL: slideLayoutData = {
+        width: 612,
+        height: 793,
+        borderPx: 10
+    };
+    
+    let newline = "\n";
+    let infoString = "AreaName: " + responseData.area_name + newline
+        + "gascard: " + responseData.card_number + newline
+        + "Miles Used: " + responseData.mile_sum;
+    // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
+    if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
+        infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
+    }
+    let infoBoxData = {
+        width: sL.width - 2 * sL.borderPx,
+        height: 100
+    };
+    let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height);
+    console.log(gasSlide.getLayout());
+
+    let minHeight = infoBoxData.height + sL.borderPx;
+    let maxHeight1 = (sL.height/2) - minHeight
+    let imageId1 = getIdFromUrl_(imageUrl1);
+    // let imageURL = "https://drive.google.com/file/d/" + imageId
+    let image1 = DriveApp.getFileById(imageId1);
+    // let metaData = image.getMimeType()
+    let imageBlob1 = image1.getBlob();
+    // let imageClass = loadImageFromId(imageId)
+    let photo1 = gasSlide.insertImage(imageBlob1);
+
+    alignImage(photo1, orientEnum.landscape, sL, minHeight, maxHeight1);
+    
+    if (typeof imageUrl2 == typeof "string") {
+        let imageId2 = getIdFromUrl_(imageUrl2)
+        let image2 = DriveApp.getFileById(imageId2)
+        let imageBlob2 = image2.getBlob()
+        let photo2 = gasSlide.insertImage(imageBlob2)
+        let image2MinHeight = minHeight + maxHeight1
+        alignImage(photo2, orientEnum.landscape, sL, image2MinHeight)
+    }
+    // infoBox.getText().
+    // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
+
+
+
+}
+
+function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl: string, index: number) {
     // Step 1: Add Photo
     
     // let photo = gasSlide.insertImage()
@@ -243,11 +295,11 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     
     let minHeight = infoBoxData.height + sL.borderPx
-    alignImage(photo, orientEnum.portrait, sL, minHeight, 500) // TODO remove height
+    alignImage(photo, orientEnum.portrait, sL, minHeight)
     // infoBox.getText().
     // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
 
-
+    
 
 }
 
@@ -276,19 +328,33 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     let iterant = 0
     for (let entry of logPages) {
         
-        let gasSlide = createNewSlide(targetPresentation, postSlideId)
-        gasSlideEditor(gasSlide, responseData, entry,iterant)
+        let logSlide = createNewSlide(targetPresentation, postSlideId)
+        logSlideEditor(logSlide, responseData, entry,iterant)
 
         iterant += 1
         // , logSlides.length)
         
     }
 
+    let receiptPics = String(outEntry).trim().split(",")
+    let receiptIterant = 0
+    for (let i = 0; i < receiptPics.length; i += 2){
+        let entry1url = receiptPics[i]
+        let entry2url:string|null = null
+        if (i + 1 < receiptPics.length) {
+            entry2url = receiptPics[i + 1]
+            
+        }
+        let gasSlide = createNewSlide(targetPresentation, postSlideId)
+        gasSlideEditor(gasSlide, responseData, entry1url, entry2url, i)
+
+    }
 
     /*
         WYLO 2: not done defining types on my way to TS-verified results
 
     */
+    
     
 }
 
