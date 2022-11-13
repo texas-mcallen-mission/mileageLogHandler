@@ -1,4 +1,24 @@
+/* FLOW
+Open folder with documents in it OR load from a sheet that has that data in it
+then open up presentation.  If none exists, copy from template, rename " $month $year : gas receipts and logbooks"
 
+Load up slide positioning data from datastore.  If none exists, we're  going to have to load all the data for the whole month
+
+For entry {gas | logbook } that hasn't been logged (or all of them if there's no positional data)
+    create new slide, possibly from template
+    *APPEND, DON'T ENTER*
+    store sheet id on slide, update positional data
+    stick basic info about vehicle stuff in the top corner or somewhere
+    stick photo on slide (that's already been messed with, if it needs anything)
+    (should i  - nahhh, we're just going to do it this way)
+    Could do gas receipts and mileage logs in separate presentations?
+
+    one slide for the mileage log, and *n* slides where n = ceil( #receiptPhotos / 2 )
+
+    update positional datastore
+    update output datastore
+
+*/
 function tester() {
     // load up the logbook we need - this will need to change to loading EVERY logbook we need in the future ....
     let presentation = getLogbook(2022, "August");
@@ -228,39 +248,65 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum;
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
-
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
     }
     let infoBoxData = {
-        width: sL.width - 2 * sL.borderPx,
+        width: (sL.width)/2 - 2 * sL.borderPx,
         height: 100
     };
-    let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height);
+    let infoBox = gasSlide.insertTextBox(infoString, sL.borderPx, sL.borderPx, infoBoxData.width, infoBoxData.height);
     console.log(gasSlide.getLayout());
+
+    // Generates the receipt date:cost informations
+    let receiptString:string = ""
+    let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"]
+    let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"]
+    for (let i = 0; i < receiptCostKeys.length; i++){
+        let hasEntry = false
+        if (responseData.hasOwnProperty(receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
+            receiptString += responseData[receiptDateKeys[i]] + ": "
+            hasEntry = true
+        }
+        if (responseData.hasOwnProperty(receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
+            receiptString += responseData[receiptCostKeys[i]];
+            hasEntry = true;
+        } else if (hasEntry) {
+            receiptString += "N/A"
+        }
+        if (hasEntry) {
+            receiptString += newline
+        }
+    }
+
+    let receiptBoxData = {
+        width: (sL.width / 2) - 2 * sL.borderPx,
+        height:100
+    }
+    let receiptBox = gasSlide.insertTextBox(receiptString, infoBoxData.width + sL.borderPx, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
+    
+
 
     let minHeight = infoBoxData.height + sL.borderPx;
     let maxHeight1 = (sL.height/2) - minHeight
-    let imageId1 = getIdFromUrl_(imageUrl1);
-    // let imageURL = "https://drive.google.com/file/d/" + imageId
-    let image1 = DriveApp.getFileById(imageId1);
-    // let metaData = image.getMimeType()
-    let imageBlob1 = image1.getBlob();
+    let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1))
     // let imageClass = loadImageFromId(imageId)
-    let photo1 = gasSlide.insertImage(imageBlob1);
-
-    alignImage(photo1, orientEnum.landscape, sL, minHeight, maxHeight1);
+    if (imageBlob1) {
+        let photo1 = gasSlide.insertImage(imageBlob1);
     
-    if (typeof imageUrl2 == typeof "string") {
-        let imageId2 = getIdFromUrl_(imageUrl2)
-        let image2 = DriveApp.getFileById(imageId2)
-        let imageBlob2 = image2.getBlob()
-        let photo2 = gasSlide.insertImage(imageBlob2)
-        let image2MinHeight = minHeight + maxHeight1 + sL.borderPx
-        alignImage(photo2, orientEnum.landscape, sL, image2MinHeight)
+        alignImage(photo1, orientEnum.landscape, sL, minHeight, maxHeight1);
+    } else {
+        console.warn("Couldn't Load Receipt Image for GC# " + responseData.card_number + " for " + responseData.report_month + " " + responseData.report_year)
     }
-    // infoBox.getText().
-    // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
+    if (imageUrl2) {
+        let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2))
+        if (imageBlob2) {
+            let photo2 = gasSlide.insertImage(imageBlob2)
+            let image2MinHeight = minHeight + maxHeight1 + sL.borderPx
+            alignImage(photo2, orientEnum.landscape, sL, image2MinHeight)
+        }
+    }
+
 
 
 
@@ -276,13 +322,7 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         height: 793,
         borderPx:10
     }
-    let imageId = getIdFromUrl_(imageUrl)
-    // let imageURL = "https://drive.google.com/file/d/" + imageId
-    let image = DriveApp.getFileById(imageId)
-    // let metaData = image.getMimeType()
-    let imageBlob = image.getBlob()
-    // let imageClass = loadImageFromId(imageId)
-    let photo = gasSlide.insertImage(imageBlob)
+
     let newline = "\n"
     let infoString = "AreaName: " + responseData.area_name + newline
     + "gascard: " + responseData.card_number + newline
@@ -296,16 +336,34 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     }
     let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height)
     console.log(gasSlide.getLayout())
-    
 
-    
-    let minHeight = infoBoxData.height + sL.borderPx
-    alignImage(photo, orientEnum.portrait, sL, minHeight)
-    // infoBox.getText().
-    // photo.alignOnPage("CENTER") // or AlignmentPosition.CENTER ??
+    let minImageHeight = infoBoxData.height + sL.borderPx
 
-    
 
+    let imageBlob = getImageBlobFromID(getIdFromUrl_(imageUrl));
+    // let imageClass = loadImageFromId(imageId)
+    if (imageBlob) {
+        let photo = gasSlide.insertImage(imageBlob)
+        
+        alignImage(photo, orientEnum.portrait, sL, minImageHeight)
+        
+    } else {
+        console.warn("Couldn't Load Mileage Log for GC# "+ responseData.card_number + " for "+ responseData.report_month + " " +responseData.report_year)
+    }
+
+
+
+}
+
+function getImageBlobFromID(imageId:string):GoogleAppsScript.Base.Blob|null {
+    try {
+        let image = DriveApp.getFileById(imageId);
+        // let metaData = image.getMimeType()
+        let imageBlob = image.getBlob();
+        return imageBlob
+    } catch (e) {
+        return null
+    }
 }
 
 function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
@@ -375,27 +433,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
 
 
 
-/* FLOW
-Open folder with documents in it OR load from a sheet that has that data in it
-then open up presentation.  If none exists, copy from template, rename " $month $year : gas receipts and logbooks"
 
-Load up slide positioning data from datastore.  If none exists, we're  going to have to load all the data for the whole month
-
-For entry {gas | logbook } that hasn't been logged (or all of them if there's no positional data)
-    create new slide, possibly from template
-    *APPEND, DON'T ENTER*
-    store sheet id on slide, update positional data
-    stick basic info about vehicle stuff in the top corner or somewhere
-    stick photo on slide (that's already been messed with, if it needs anything)
-    (should i  - nahhh, we're just going to do it this way)
-    Could do gas receipts and mileage logs in separate presentations?
-
-    one slide for the mileage log, and *n* slides where n = ceil( #receiptPhotos / 2 )
-
-    update positional datastore
-    update output datastore
-
-*/
 
 function getLogbook(year:string|number,month:string):GoogleAppsScript.Slides.Presentation {
     // step 1: get the containing folder
