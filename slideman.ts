@@ -293,10 +293,10 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     }
 
     let receiptBoxData = {
-        width: (sL.width / 2) - 2 * sL.borderPx,
+        width: (sL.width / 3) - 2 * sL.borderPx,
         height:100
     }
-    let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
+    let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx*2, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
     
     if (receiptString2 != "") {
         let xPos = infoBoxData.width + receiptBoxData.width + sL.borderPx * 3
