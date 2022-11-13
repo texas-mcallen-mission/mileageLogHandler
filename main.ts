@@ -50,6 +50,13 @@ let responseConfig: sheetDataEntry = {
     }
 };
 
+const sheetCoreConfig: sheetCoreConfigInfo = {
+    cacheKey: "SHEETCORE_LOGBOOKS",
+    cacheExpiration: 1800,
+    cacheEnabled: false,
+
+
+}
 
 let datastoreConfig: sheetDataEntry = {
     tabName: "slideData",
