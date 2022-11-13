@@ -253,33 +253,42 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
     }
     let infoBoxData = {
-        width: (sL.width)/2 - 2 * sL.borderPx,
+        width: (sL.width)/3 - 2 * sL.borderPx,
         height: 100
     };
     let infoBox = gasSlide.insertTextBox(infoString, sL.borderPx, sL.borderPx, infoBoxData.width, infoBoxData.height);
     console.log(gasSlide.getLayout());
 
     // Generates the receipt date:cost informations
-    let receiptString:string = ""
+    let receiptString1: string = ""
+    let receiptString2: string = ""
+    let existentReceipts :number = 0
     let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"]
     let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"]
     for (let i = 0; i < receiptCostKeys.length; i++){
+        let output:string = ""
         let hasEntry = false
         if (responseData.hasOwnProperty(receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
             let dateObj = new Date(responseData[receiptDateKeys[i]])
             let formattedString:string = (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" + dateObj.getFullYear() 
-        
-            receiptString += formattedString + ": "
+            output += formattedString + ": "
             hasEntry = true
         }
         if (responseData.hasOwnProperty(receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
-            receiptString += responseData[receiptCostKeys[i]];
+            output += responseData[receiptCostKeys[i]];
             hasEntry = true;
         } else if (hasEntry) {
-            receiptString += "N/A"
+            output += "N/A"
         }
         if (hasEntry) {
-            receiptString += newline
+            existentReceipts += 1
+            output += newline
+        }
+
+        if (existentReceipts <= 5) {
+            receiptString1 += output
+        } else {
+            receiptString2 += output
         }
     }
 
@@ -287,8 +296,12 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         width: (sL.width / 2) - 2 * sL.borderPx,
         height:100
     }
-    let receiptBox = gasSlide.insertTextBox(receiptString, infoBoxData.width + sL.borderPx, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
+    let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
     
+    if (receiptString2 != "") {
+        let xPos = infoBoxData.width + receiptBoxData.width + sL.borderPx * 3
+        let receiptBox2 = gasSlide.insertTextBox(receiptString2,xPos,sL.borderPx,receiptBoxData.width,receiptBoxData.height)
+    }
 
 
     let minHeight = infoBoxData.height + sL.borderPx;
