@@ -266,7 +266,10 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     for (let i = 0; i < receiptCostKeys.length; i++){
         let hasEntry = false
         if (responseData.hasOwnProperty(receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
-            receiptString += responseData[receiptDateKeys[i]] + ": "
+            let dateObj = new Date(responseData[receiptDateKeys[i]])
+            let formattedString:string = (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" + dateObj.getFullYear() 
+        
+            receiptString += formattedString + ": "
             hasEntry = true
         }
         if (responseData.hasOwnProperty(receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
