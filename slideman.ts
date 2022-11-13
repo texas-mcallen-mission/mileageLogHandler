@@ -248,6 +248,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum;
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
+    //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
     }
@@ -326,7 +327,8 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let newline = "\n"
     let infoString = "AreaName: " + responseData.area_name + newline
     + "gascard: " + responseData.card_number + newline
-    + "Miles Used: " + responseData.mile_sum
+        + "Miles Used: " + responseData.mile_sum
+    //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
     }
