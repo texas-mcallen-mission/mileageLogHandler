@@ -1,3 +1,134 @@
+
+
+
+
+
+
+interface cacheEntry {
+    active: boolean,
+    lastUpdate: number;
+}
+
+function parseDoubleLockValue(cacheVal: string | null): cacheEntry {
+    let output: cacheEntry = {
+        active: false, // these are the default values; this might want to be modified in the future.
+        lastUpdate: 0
+    };
+
+    if (cacheVal) {
+        let deString = JSON.parse(cacheVal);
+        try {
+            output.active = deString["active"];
+            output.lastUpdate = deString["lastUpdate"];
+        } catch (error) {
+            console.warn("error parsing cache");
+            return output;
+        }
+    }
+
+    return output;
+}
+
+interface cacheData {
+    primary: cacheEntry,
+    secondary:cacheEntry
+}
+
+class doubleCacheLock {
+    prefix: string = "SLIDEMAN_CACHE";
+    primaryStr: string = "Lock1";
+    secondaryStr: string = "Lock2";
+    maxLineKey:string = "maxLine"
+    cacheObj: GoogleAppsScript.Cache.Cache;
+    expiration:number = 30*60 // 30 minutes * 60 seconds each
+
+    constructor() {
+        var cacheObj = CacheService.getScriptCache();
+
+        return this;
+    }
+
+    getKeys() {
+        let output: string[] = [];
+        output.push(this.prefix + this.primaryStr);
+        output.push(this.prefix + this.secondaryStr);
+        return output;
+    }
+
+    getData():cacheData {
+        let key1 = this.prefix + this.primaryStr;
+        let key2 = this.prefix + this.secondaryStr;
+        // let keys = [key1, key2];
+        let keys = {
+            primary: this.prefix + this.primaryStr,
+            secondary: this.prefix + this.secondaryStr
+        }
+        //@ts-ignore this is getting generated right here :)
+        let output:cacheData = {};
+        for (let key in keys) {
+            let cacheVal = this.cacheObj.get(key)
+            
+            output[key] = parseDoubleLockValue(cacheVal) 
+        }
+        return output
+    }
+    internalLocker(key: string, active: boolean) {
+        let updateDate = new Date();
+        let updateTime = updateDate.getTime();
+        let entryStruct: cacheEntry = {
+            active: true,
+            lastUpdate: updateTime
+        };
+        let entryData = JSON.stringify(entryStruct);
+        this.cacheObj.put(key, entryData)
+    }
+    get isPrimaryLocked():boolean {
+        let data = this.getData()
+        return data.primary.active
+    }
+    get isSecondaryLocked(): boolean {
+        let data = this.getData();
+        return data.secondary.active;
+    }
+    lockPrimary() {
+        this.internalLocker(this.prefix + this.primaryStr, true)
+        
+    }
+    lockSecondary() {
+        this.internalLocker(this.prefix + this.secondaryStr, true)
+    }
+
+    unlockPrimary() {
+        this.internalLocker(this.prefix + this.primaryStr, false)
+    }
+    unlockSecondary() {
+        this.internalLocker(this.prefix + this.secondaryStr, false)
+    }
+    unlockEverything() {
+        this.internalLocker(this.prefix + this.primaryStr, false);
+        this.internalLocker(this.prefix + this.secondaryStr, true)
+    }
+    get minLine(): number | null {
+        let lineKey = this.prefix + this.maxLineKey
+        let cacheLockVal = this.cacheObj.get(lineKey)
+        if (cacheLockVal) {
+            return +cacheLockVal
+        } else {
+            return null
+        }
+    }
+    set minLine(line: number | null) {
+        if (line) {
+            let lineKey = this.prefix + this.maxLineKey
+            this.cacheObj.put(lineKey,String(line))
+        }
+    }
+}
+
+
+
+
+
 let responseConfig: sheetDataEntry = {
     tabName: "Form Responses 1",
     headerRow: 0,

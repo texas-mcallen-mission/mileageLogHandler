@@ -56,6 +56,7 @@ function tester() {
 
 }
 
+
 function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex): slideDataEntry {
 
     let outEntry: slideDataEntry = {
