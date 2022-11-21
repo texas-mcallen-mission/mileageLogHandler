@@ -229,12 +229,13 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     console.log(gasSlide.getLayout());
 
     // Generates the receipt date:cost informations
+    // groups into two batches of 6 receipts per box
     let receiptString1: string = ""
     let receiptString2: string = ""
     let existentReceipts :number = 0
     let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"]
     let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"]
-    
+    let maxReceiptsOneBox = 6 // 1-indexed
     for (let i = 0; i < receiptCostKeys.length; i++){
         let output:string = ""
         let hasEntry = false
@@ -255,7 +256,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
             output += newline
         }
 
-        if (existentReceipts <= 5) {
+        if (existentReceipts <= maxReceiptsOneBox) {
             receiptString1 += output
         } else {
             receiptString2 += output
