@@ -183,12 +183,11 @@ function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentati
 }
 
 
+// function loadImageFromId(id: string) {}
 
-function loadImageFromId(id: string) {}
-
-    enum orientEnum {
-    landscape,
-    portrait
+enum orientEnum {
+landscape,
+portrait
 }
 
 
@@ -274,8 +273,9 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         let receiptBox2 = gasSlide.insertTextBox(receiptString2,xPos,sL.borderPx,receiptBoxData.width,receiptBoxData.height)
     }
 
+    let textMaxHeight =Math.max(infoBoxData.height,receiptBoxData.height)
 
-    let minHeight = infoBoxData.height + sL.borderPx;
+    let minHeight = textMaxHeight + sL.borderPx;
     let maxHeight1 = (sL.height/2) - minHeight
     let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1))
     // let imageClass = loadImageFromId(imageId)
