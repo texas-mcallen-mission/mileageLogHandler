@@ -227,7 +227,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     };
 
     let infoBoxData = {
-        width: (sL.width- 4*sL.borderPx)/3
+        width: (sL.width- 4*sL.borderPx)/3,
         height: 110
     };
 
