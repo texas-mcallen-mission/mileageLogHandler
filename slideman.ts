@@ -204,7 +204,9 @@ interface slideLayoutData {
 
 function getInfoString(responseData) {
     let newline = "\n";
-    let infoString = "AreaName: " + responseData.area_name + newline
+
+    let infoString = responseData.report_month + " " + responseData.report_year + newline
+        "AreaName: " + responseData.area_name + newline
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum + newline
         + "git commit: " + GITHUB_DATA.commit_sha.slice(0, 8);
