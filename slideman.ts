@@ -223,7 +223,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     }
     let infoBoxData = {
         width: (sL.width)/3 - 2 * sL.borderPx,
-        height: 100
+        height: 110
     };
     let infoBox = gasSlide.insertTextBox(infoString, sL.borderPx, sL.borderPx, infoBoxData.width, infoBoxData.height);
     console.log(gasSlide.getLayout());
@@ -246,7 +246,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
             hasEntry = true
         }
         if (responseData.hasOwnProperty(receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
-            output += responseData[receiptCostKeys[i]];
+            output += "$ " + Number(responseData[receiptCostKeys[i]]).toFixed(2)
             hasEntry = true;
         } else if (hasEntry) {
             output += "N/A"
@@ -265,7 +265,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     let receiptBoxData = {
         width: (sL.width / 3) - 2 * sL.borderPx,
-        height:100
+        height:110
     }
     let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx*2, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
     
@@ -276,8 +276,8 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     let textMaxHeight =Math.max(infoBoxData.height,receiptBoxData.height)
 
-    let minHeight = textMaxHeight + sL.borderPx;
-    let maxHeight1 = (sL.height/2) - minHeight
+    let minHeight = textMaxHeight + sL.borderPx*2;
+    let maxHeight1 = (sL.height- minHeight)/2
     let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1))
     // let imageClass = loadImageFromId(imageId)
     if (imageBlob1) {
@@ -316,6 +316,7 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let infoString = "AreaName: " + responseData.area_name + newline
     + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum
+    + "commit: " + GITHUB_DATA.commit_sha.slice(0,8)
     //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
