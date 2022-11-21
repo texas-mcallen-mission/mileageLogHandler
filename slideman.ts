@@ -283,17 +283,18 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         let receiptBox2 = gasSlide.insertTextBox(receiptString2,xPos,sL.borderPx,receiptBoxData.width,receiptBoxData.height)
     }
 
-    let textMaxHeight =Math.max(infoBoxData.height,receiptBoxData.height) + sL.borderPx
+    let textMaxHeight =Math.max(infoBoxData.height,receiptBoxData.height)
 
-    let top = textMaxHeight + sL.borderPx*2;
-    // let maxHeight1 = (sL.height - top) / 2
     let imageHeight = (sL.height - (textMaxHeight + 4*sL.borderPx))/2
+    let top1 = textMaxHeight + sL.borderPx * 2;
+    let top2 = textMaxHeight + sL.borderPx * 3 + imageHeight
+    // let maxHeight1 = (sL.height - top) / 2
     let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1))
     // let imageClass = loadImageFromId(imageId)
     if (imageBlob1) {
         let photo1 = gasSlide.insertImage(imageBlob1);
     
-        alignImage(photo1, orientEnum.landscape, sL, top, imageHeight);
+        alignImage(photo1, orientEnum.landscape, sL, top1, imageHeight);
     } else {
         console.warn("Couldn't Load Receipt Image for GC# " + responseData.card_number + " for " + responseData.report_month + " " + responseData.report_year)
     }
@@ -301,8 +302,8 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2))
         if (imageBlob2) {
             let photo2 = gasSlide.insertImage(imageBlob2)
-            let image2MinHeight = top + imageHeight + sL.borderPx
-            alignImage(photo2, orientEnum.landscape, sL, image2MinHeight,imageHeight)
+            let image2MinHeight = top1 + imageHeight + sL.borderPx
+            alignImage(photo2, orientEnum.landscape, sL, top2,imageHeight)
         }
     }
 
