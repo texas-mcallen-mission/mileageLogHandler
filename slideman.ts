@@ -350,6 +350,16 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
 
 }
+
+/**
+ *
+ *
+ * @param {GoogleAppsScript.Slides.Image} photo - the photo to be modified
+ * @param {orientEnum} orientation - final orientation of  image, either orientEnum.landscape or orientEnum.portrait
+ * @param {slideLayoutData} sL - data about the slide.
+ * @param {number} top - how far from the top the image starts
+ * @param {number} [maxImageHeight] - if you want to stick something else on the slide with an image, use this.  Otherwise, the image will use all available height.
+ */
 function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnum, sL: slideLayoutData, top: number, maxImageHeight?: number) {
     // photo.setLeft(20)
 
@@ -381,11 +391,11 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     let maxHeight: number;
     let imageBoxHeight: number;
     if (maxImageHeight) {
-        maxHeight = maxImageHeight + sL.borderPx * 2;
+        maxHeight = maxImageHeight /*+ sL.borderPx * 2;*/
         imageBoxHeight = maxImageHeight;
     } else {
-        maxHeight = sL.height - (top) - sL.borderPx;
-        imageBoxHeight = (sL.height - top);
+        maxHeight = sL.height - top - sL.borderPx; // NOT removing this sL.borderPx because this keeps it off the bottom if there's only one image
+        imageBoxHeight = sL.height - top;
     }
 
 
