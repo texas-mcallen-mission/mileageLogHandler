@@ -201,6 +201,18 @@ interface slideLayoutData {
     height: number,
     borderPx: number
 }
+
+function getInfoString(responseData) {
+    let newline = "\n";
+    let infoString = "AreaName: " + responseData.area_name + newline
+        + "gascard: " + responseData.card_number + newline
+        + "Miles Used: " + responseData.mile_sum + newline
+        + "git commit: " + GITHUB_DATA.commit_sha.slice(0, 8);
+    if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
+        infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
+    }
+    return infoString
+}
 function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl1: string,imageUrl2:string|null, index: number) {
     // Step 1: Add Photo
 
@@ -211,22 +223,17 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         height: 793,
         borderPx: 10
     };
-    
-    let newline = "\n";
-    let infoString = "AreaName: " + responseData.area_name + newline
-        + "gascard: " + responseData.card_number + newline
-        + "Miles Used: " + responseData.mile_sum;
+    let newline = "/n"
+    let infoString = getInfoString(responseData)
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
     //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
-    if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
-        infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
-    }
+
     let infoBoxData = {
         width: (sL.width)/3 - 2 * sL.borderPx,
         height: 110
     };
     let infoBox = gasSlide.insertTextBox(infoString, sL.borderPx, sL.borderPx, infoBoxData.width, infoBoxData.height);
-    console.log(gasSlide.getLayout());
+    // console.log(gasSlide.getLayout());
 
     // Generates the receipt date:cost informations
     // groups into two batches of 6 receipts per box
@@ -312,21 +319,16 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         borderPx:10
     }
 
-    let newline = "\n"
-    let infoString = "AreaName: " + responseData.area_name + newline
-    + "gascard: " + responseData.card_number + newline
-        + "Miles Used: " + responseData.mile_sum
-    + "commit: " + GITHUB_DATA.commit_sha.slice(0,8)
-    //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
-    if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
-        infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness
-    }
+    
+    let infoString = getInfoString(responseData)
+    
     let infoBoxData = {
         width: sL.width - 2 * sL.borderPx,
         height: 100
     }
+    
     let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height)
-    console.log(gasSlide.getLayout())
+    // console.log(gasSlide.getLayout())
 
     let minImageHeight = infoBoxData.height + sL.borderPx
 
