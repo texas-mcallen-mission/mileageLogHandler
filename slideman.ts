@@ -225,7 +225,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         height: 793,
         borderPx: 10
     };
-    let newline = "/n"
+    let newline = "\n"
     let infoString = getInfoString(responseData)
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
     //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
