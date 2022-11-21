@@ -285,15 +285,15 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     let textMaxHeight =Math.max(infoBoxData.height,receiptBoxData.height) + sL.borderPx
 
-    let minHeight = textMaxHeight + sL.borderPx*2;
-    // let maxHeight1 = (sL.height - minHeight) / 2
-    let imageHeight = (sL.height - (textMaxHeight + 4*sL.borderPx))
+    let top = textMaxHeight + sL.borderPx*2;
+    // let maxHeight1 = (sL.height - top) / 2
+    let imageHeight = (sL.height - (textMaxHeight + 4*sL.borderPx))/2
     let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1))
     // let imageClass = loadImageFromId(imageId)
     if (imageBlob1) {
         let photo1 = gasSlide.insertImage(imageBlob1);
     
-        alignImage(photo1, orientEnum.landscape, sL, minHeight, imageHeight);
+        alignImage(photo1, orientEnum.landscape, sL, top, imageHeight);
     } else {
         console.warn("Couldn't Load Receipt Image for GC# " + responseData.card_number + " for " + responseData.report_month + " " + responseData.report_year)
     }
@@ -301,7 +301,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2))
         if (imageBlob2) {
             let photo2 = gasSlide.insertImage(imageBlob2)
-            let image2MinHeight = minHeight + imageHeight + sL.borderPx
+            let image2MinHeight = top + imageHeight + sL.borderPx
             alignImage(photo2, orientEnum.landscape, sL, image2MinHeight,imageHeight)
         }
     }
@@ -350,10 +350,10 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
 
 }
-function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnum, sL: slideLayoutData, minHeight: number, maxImageHeight?: number) {
+function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnum, sL: slideLayoutData, top: number, maxImageHeight?: number) {
     // photo.setLeft(20)
 
-    let availableHeight = sL.height - minHeight - sL.borderPx;
+    // let availableHeight = sL.height - top - sL.borderPx;
 
     let imageWidth = photo.getWidth();
     let imageHeight = photo.getHeight();
@@ -384,8 +384,8 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
         maxHeight = maxImageHeight + sL.borderPx * 2;
         imageBoxHeight = maxImageHeight;
     } else {
-        maxHeight = sL.height - (minHeight) - sL.borderPx;
-        imageBoxHeight = (sL.height - minHeight);
+        maxHeight = sL.height - (top) - sL.borderPx;
+        imageBoxHeight = (sL.height - top);
     }
 
 
@@ -409,7 +409,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     //      if image is rotated, set anchor point and go from there
 
     let imageCenterX = (sL.width / 2); /*- sL.borderPx*/
-    let imageCenterY = ((imageBoxHeight) / 2) + minHeight;
+    let imageCenterY = ((imageBoxHeight) / 2) + top;
 
     let anchors: coordinate[] = [
 
@@ -444,7 +444,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
         photo.setLeft(anchors[anchor].x);
         photo.setTop(anchors[anchor].y);
         // photo.setLeft(sL.borderPx);
-        // photo.setTop(minHeight + sL.borderPx);
+        // photo.setTop(top + sL.borderPx);
     }
 }
 
