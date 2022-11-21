@@ -56,6 +56,82 @@ function tester() {
 
 }
 
+function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex): slideDataEntry {
+
+    let outEntry: slideDataEntry = {
+        gasCard: 0,
+        logPageIdList: '',
+        receiptPageIdList: '',
+        month: '',
+        year: '',
+        logPageIdArray: [],
+        receiptPageIdArray: [],
+        startPosition: -1,
+    };
+
+    outEntry.gasCard = +responseData.card_number;
+    outEntry.logPageIdList = String(responseData.log_pics);
+    outEntry.receiptPageIdList = String(responseData.gas_pics);
+    outEntry.month = responseData.report_month;
+    outEntry.year = responseData.report_year;
+
+    // Step 1: build index to figure out where we're supposed to stick data
+
+    // WYLO: trying to figure out the right order for how to do this 
+
+    // WYLO 2022-10-06 : need to break this out into a function properly so that I can reuse things cleanly.  Might have two functions, one for gas & one for logs, or an internal if for switching between the two.
+    let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex);
+    // outEntry.startPosition = positionalIndex
+
+    let logSlides: GoogleAppsScript.Slides.Slide[] = [];
+    let logPages = outEntry.logPageIdList.trim().split(",");
+    outEntry.logPageIdArray = logPages;
+    let iterant = 0;
+    for (let entry of logPages) {
+
+        let logSlide = createNewSlide(targetPresentation, postSlideId);
+
+        logSlideEditor(logSlide, responseData, entry, iterant);
+
+        iterant += 1;
+        // , logSlides.length)
+
+    }
+
+    let receiptPics = outEntry.receiptPageIdList.trim().split(",");
+    outEntry.receiptPageIdArray = receiptPics;
+    // let receiptIterant = 0
+    for (let i = 0; i < receiptPics.length; i += 2) {
+        let entry1url = receiptPics[i];
+        let entry2url: string | null = null;
+        if (i + 1 < receiptPics.length) {
+            entry2url = receiptPics[i + 1];
+
+        }
+        let gasSlide = createNewSlide(targetPresentation, postSlideId);
+        gasSlideEditor(gasSlide, responseData, entry1url, entry2url, i);
+
+    }
+
+    /*
+        WYLO 2: not done defining types on my way to TS-verified results
+
+    */
+    return outEntry;
+
+}
+function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation, preSlide: string | null): GoogleAppsScript.Slides.Slide {
+    let outSlide: GoogleAppsScript.Slides.Slide;
+    if (preSlide != null) {
+        outSlide = targetPresentation.insertSlide(+preSlide);
+    } else {
+        outSlide = targetPresentation.appendSlide();
+    }
+
+    // outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
+    return outSlide;
+}
+
 function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string):positionalIndex {
     let output:positionalIndex = {};
     for (let i = 0; i > data.length; i++){
@@ -106,17 +182,7 @@ function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentati
 
 }
 
-function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation,preSlide:string|null):GoogleAppsScript.Slides.Slide {
-    let outSlide:GoogleAppsScript.Slides.Slide
-    if (preSlide != null) {
-        outSlide = targetPresentation.insertSlide(+preSlide)
-    } else {
-        outSlide = targetPresentation.appendSlide()
-    }
 
-    // outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
-    return outSlide
-}
 
 function loadImageFromId(id: string) {}
 
@@ -124,103 +190,7 @@ function loadImageFromId(id: string) {}
     landscape,
     portrait
 }
-function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnum, sL: slideLayoutData, minHeight: number,maxImageHeight?:number) {
-    // photo.setLeft(20)
 
-    let availableHeight = sL.height - minHeight - sL.borderPx
-
-    let imageWidth = photo.getWidth()
-    let imageHeight = photo.getHeight()
-    let wasRotated = false
-
-    let prWidth: number = imageWidth; // post-rotate width, I need them to be separate because calcs...
-    let prHeight:number = imageHeight
-    // Step 1: Determine if rotation is needed
-    if (imageHeight > imageWidth && orientation == orientEnum.landscape) {
-        wasRotated = true
-        photo.setRotation(90)
-        prWidth = imageHeight
-        prHeight = imageWidth
-    } else if (imageWidth > imageHeight && orientation == orientEnum.portrait) {
-        wasRotated = true
-        photo.setRotation(90)
-        prWidth = imageHeight;
-        prHeight = imageWidth        
-    }
-
-    // Step 2: Calculate Scale Values by width
-    // if resulting height would be too big, then scale by height instead
-    
-    let maxWidth:number = sL.width - 2 * sL.borderPx
-    let maxHeight: number
-    let imageBoxHeight : number
-    if (maxImageHeight) {
-        maxHeight = maxImageHeight+ sL.borderPx*2
-        imageBoxHeight = maxImageHeight
-    } else {
-        maxHeight = sL.height - (minHeight) - sL.borderPx
-        imageBoxHeight = (sL.height - minHeight)
-    }
-
-    
-
-    let scaleVal = maxWidth / prWidth
-    if (maxHeight < scaleVal * prHeight) {
-        scaleVal = maxHeight / prHeight
-    }
-
-    prWidth = prWidth * scaleVal
-    prHeight = prHeight * scaleVal
-
-
-    // Step 3: Set scale for image
-    photo.scaleHeight(scaleVal)
-    photo.scaleWidth(scaleVal)
-
-
-
-    // Step 4: Calculate & set position for image
-    //      if image is rotated, set anchor point and go from there
-
-    let imageCenterX = (sL.width / 2) /*- sL.borderPx*/
-    let imageCenterY = ((imageBoxHeight)/2) + minHeight
-
-    let anchors: coordinate[] = [
-        
-        {
-            x: imageCenterX - (prWidth / 2),
-            y: imageCenterY - (prHeight / 2)
-        },
-        {
-            x: imageCenterX + (prWidth / 2),
-            y: imageCenterY - (prHeight / 2)
-        },
-        {
-            x: imageCenterX - (prWidth / 2),
-            y: imageCenterY + (prHeight / 2)
-        },
-        {
-            x: imageCenterX + (prWidth / 2),
-            y: imageCenterY + (prHeight / 2)
-        }
-    ]
-    // During testing: You should be able to change which corner gets used on rotates by changing the x in anchors[x] fairly easily.
-    if (wasRotated == true) {
-        let anchor = 2
-        console.error(anchors[anchor])
-        let psuedoX = imageCenterX - (prHeight / 2)
-        let psuedoY = imageCenterY - (prWidth / 2)
-        photo.setLeft(psuedoX);
-        photo.setTop(psuedoY);
-    } else {
-        let anchor = 0;
-        console.warn(anchors[anchor]);
-        photo.setLeft(anchors[anchor].x);
-        photo.setTop(anchors[anchor].y);
-        // photo.setLeft(sL.borderPx);
-        // photo.setTop(minHeight + sL.borderPx);
-    }
-}
 
 interface coordinate {
     x: number,
@@ -265,6 +235,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let existentReceipts :number = 0
     let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"]
     let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"]
+    
     for (let i = 0; i < receiptCostKeys.length; i++){
         let output:string = ""
         let hasEntry = false
@@ -372,6 +343,103 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
 
 }
+function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnum, sL: slideLayoutData, minHeight: number, maxImageHeight?: number) {
+    // photo.setLeft(20)
+
+    let availableHeight = sL.height - minHeight - sL.borderPx;
+
+    let imageWidth = photo.getWidth();
+    let imageHeight = photo.getHeight();
+    let wasRotated = false;
+
+    let prWidth: number = imageWidth; // post-rotate width, I need them to be separate because calcs...
+    let prHeight: number = imageHeight;
+    // Step 1: Determine if rotation is needed
+    if (imageHeight > imageWidth && orientation == orientEnum.landscape) {
+        wasRotated = true;
+        photo.setRotation(90);
+        prWidth = imageHeight;
+        prHeight = imageWidth;
+    } else if (imageWidth > imageHeight && orientation == orientEnum.portrait) {
+        wasRotated = true;
+        photo.setRotation(90);
+        prWidth = imageHeight;
+        prHeight = imageWidth;
+    }
+
+    // Step 2: Calculate Scale Values by width
+    // if resulting height would be too big, then scale by height instead
+
+    let maxWidth: number = sL.width - 2 * sL.borderPx;
+    let maxHeight: number;
+    let imageBoxHeight: number;
+    if (maxImageHeight) {
+        maxHeight = maxImageHeight + sL.borderPx * 2;
+        imageBoxHeight = maxImageHeight;
+    } else {
+        maxHeight = sL.height - (minHeight) - sL.borderPx;
+        imageBoxHeight = (sL.height - minHeight);
+    }
+
+
+
+    let scaleVal = maxWidth / prWidth;
+    if (maxHeight < scaleVal * prHeight) {
+        scaleVal = maxHeight / prHeight;
+    }
+
+    prWidth = prWidth * scaleVal;
+    prHeight = prHeight * scaleVal;
+
+
+    // Step 3: Set scale for image
+    photo.scaleHeight(scaleVal);
+    photo.scaleWidth(scaleVal);
+
+
+
+    // Step 4: Calculate & set position for image
+    //      if image is rotated, set anchor point and go from there
+
+    let imageCenterX = (sL.width / 2); /*- sL.borderPx*/
+    let imageCenterY = ((imageBoxHeight) / 2) + minHeight;
+
+    let anchors: coordinate[] = [
+
+        {
+            x: imageCenterX - (prWidth / 2),
+            y: imageCenterY - (prHeight / 2)
+        },
+        {
+            x: imageCenterX + (prWidth / 2),
+            y: imageCenterY - (prHeight / 2)
+        },
+        {
+            x: imageCenterX - (prWidth / 2),
+            y: imageCenterY + (prHeight / 2)
+        },
+        {
+            x: imageCenterX + (prWidth / 2),
+            y: imageCenterY + (prHeight / 2)
+        }
+    ];
+    // During testing: You should be able to change which corner gets used on rotates by changing the x in anchors[x] fairly easily.
+    if (wasRotated == true) {
+        let anchor = 2;
+        console.error(anchors[anchor]);
+        let psuedoX = imageCenterX - (prHeight / 2);
+        let psuedoY = imageCenterY - (prWidth / 2);
+        photo.setLeft(psuedoX);
+        photo.setTop(psuedoY);
+    } else {
+        let anchor = 0;
+        console.warn(anchors[anchor]);
+        photo.setLeft(anchors[anchor].x);
+        photo.setTop(anchors[anchor].y);
+        // photo.setLeft(sL.borderPx);
+        // photo.setTop(minHeight + sL.borderPx);
+    }
+}
 
 function getImageBlobFromID(imageId:string):GoogleAppsScript.Base.Blob|null {
     try {
@@ -384,70 +452,6 @@ function getImageBlobFromID(imageId:string):GoogleAppsScript.Base.Blob|null {
     }
 }
 
-function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex):slideDataEntry {
-
-    let outEntry: slideDataEntry = {
-        gasCard: 0,
-        logPageIdList: '',
-        receiptPageIdList: '',
-        month: '',
-        year: '',
-        logPageIdArray: [],
-        receiptPageIdArray: [],
-        startPosition:-1,
-    };
-
-    outEntry.gasCard = +responseData.card_number
-    outEntry.logPageIdList = String(responseData.log_pics)
-    outEntry.receiptPageIdList = String(responseData.gas_pics)
-    outEntry.month = responseData.report_month
-    outEntry.year = responseData.report_year
-    
-    // Step 1: build index to figure out where we're supposed to stick data
-    
-    // WYLO: trying to figure out the right order for how to do this 
-    
-    // WYLO 2022-10-06 : need to break this out into a function properly so that I can reuse things cleanly.  Might have two functions, one for gas & one for logs, or an internal if for switching between the two.
-    let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex)
-    // outEntry.startPosition = positionalIndex
-    
-    let logSlides: GoogleAppsScript.Slides.Slide[] = []
-    let logPages = outEntry.logPageIdList.trim().split(",")
-    outEntry.logPageIdArray = logPages
-    let iterant = 0
-    for (let entry of logPages) {
-        
-        let logSlide = createNewSlide(targetPresentation, postSlideId)
-        
-        logSlideEditor(logSlide, responseData, entry,iterant)
-
-        iterant += 1
-        // , logSlides.length)
-        
-    }
-
-    let receiptPics = outEntry.receiptPageIdList.trim().split(",")
-    outEntry.receiptPageIdArray = receiptPics
-    // let receiptIterant = 0
-    for (let i = 0; i < receiptPics.length; i += 2){
-        let entry1url = receiptPics[i]
-        let entry2url:string|null = null
-        if (i + 1 < receiptPics.length) {
-            entry2url = receiptPics[i + 1]
-            
-        }
-        let gasSlide = createNewSlide(targetPresentation, postSlideId)
-        gasSlideEditor(gasSlide, responseData, entry1url, entry2url, i)
-
-    }
-
-    /*
-        WYLO 2: not done defining types on my way to TS-verified results
-
-    */
-    return outEntry
-    
-}
 
 
 
