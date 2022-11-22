@@ -249,6 +249,7 @@ class doubleCacheLock {
             active: true,
             lastUpdate: updateTime
         };
+        entryStruct.active = active
         let entryData = JSON.stringify(entryStruct);
         this.cacheObj.put(key, entryData)
     }
