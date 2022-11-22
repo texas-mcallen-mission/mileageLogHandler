@@ -10,6 +10,7 @@ interface cacheEntry {
 }
 
 function runUpdates(): void{
+    let startTime = new Date()
     // step zero: cachelock - make sure we can actually run :)
     let locker = new doubleCacheLock()
     let minRow = 0
@@ -64,24 +65,28 @@ function runUpdates(): void{
     let presentationCache: manyPresentations = {}
 
 
-    
-
-    for (let rawResponse of responseData.data) {
-        let response = convertKiEntryToLogResponse(rawResponse)
-        let presentationString = String(response.report_year) + response.report_month
-        let presentation:GoogleAppsScript.Slides.Presentation
-        if (presentationCache.hasOwnProperty(presentationString)) {
-            presentation = presentationCache[presentationString]
-        } else {
-            presentation = getLogbook(response.report_year, response.report_month)
-            presentationCache[presentationString] = presentation
+    let loopDone = false
+    // TODO: add check to see if nearing end of time available to save&quit safely
+    while (checkTime(startTime, 0.5) && loopDone == false) {
+        for (let rawResponse of responseData.data) {
+            let response = convertKiEntryToLogResponse(rawResponse)
+            let presentationString = String(response.report_year) + response.report_month
+            let presentation:GoogleAppsScript.Slides.Presentation
+            if (presentationCache.hasOwnProperty(presentationString)) {
+                presentation = presentationCache[presentationString]
+            } else {
+                presentation = getLogbook(response.report_year, response.report_month)
+                presentationCache[presentationString] = presentation
+            }
+            // build index, because it gets out of date
+            let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData);
+            slideData.push(newSlides);
+            newData.push(newSlides);
+            pulledRows.push(rawResponse[iterantKey])
         }
-        // build index, because it gets out of date
-        let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData);
-        slideData.push(newSlides);
-        newData.push(newSlides);
-        pulledRows.push(rawResponse[iterantKey])
+        loopDone = true
     }
+    
     outputSheet.insertData(newData)
     
     let column = responseSheet.getIndex("pulled")
@@ -98,6 +103,23 @@ function runUpdates(): void{
         console.log("exiting, not unlocking primary")
     }
     
+}
+
+/**
+ *  Checks to make sure that the system isn't going to fail to finish because it went overtime. 
+ *
+ * @param {Date} startTime
+ * @return {*}  {boolean}
+ */
+function checkTime(startTime: Date,maxTimeInMinutes:number) :boolean{
+    let currentTime = new Date()
+    let minuteToMillis = maxTimeInMinutes * 60000
+    if (currentTime.getTime() - startTime.getTime() > minuteToMillis) {
+        return true
+    } else {
+        console.log("Running out of time!")
+        return false
+    }
 }
 
 function setPrimaryLock() {
@@ -147,7 +169,7 @@ class doubleCacheLock {
     expiration:number = 30*60 // 30 minutes * 60 seconds each
 
     constructor() {
-        var cacheObj = CacheService.getScriptCache();
+        this.cacheObj = CacheService.getScriptCache();
 
         return this;
     }
@@ -232,6 +254,53 @@ class doubleCacheLock {
 }
 
 
+function moveNewPhotosToFolders() {
+    let rsdIn1 = new RawSheetData(responseConfig);
+    let log_responses = new SheetData(rsdIn1);
+
+    let data = log_responses.getData();
+    let rows_pulled = data.length;
+
+    let logData: kiDataClass = new kiDataClass(data);
+
+    let photoFolder = getPhotoFolder();
+
+    // @ts-expect-error I know this is maybe not the best form, but I can almost guarantee this format, and it makes things easier down the line.  #watchme
+    let start_data: log_data[] = logData.keepMatchingByKey("pulled", [""]).end;
+    let newPhotos: GoogleAppsScript.Drive.File[] = [];
+    for (let submission of start_data) {
+        let gas_pic_urls: string[] = submission.gas_pics.split(",");
+        let log_pic_urls: string[] = submission.log_pics.split(",");
+        let gas_iterant: number = 1;
+        let log_iterant: number = 1;
+        // GR for gas, LB for log books
+        let subFolders: string[] = [String(submission.report_year), submission.report_month];
+        for (let entry of gas_pic_urls) {
+            entry.trim();
+            let targetPhoto = getDocumentFromURL_(entry);
+            let newName = String(submission.card_number) + "_GR_" + String(gas_iterant);
+            if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
+                let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
+                newPhotos.push(organizedPhoto);
+                // let organizedPhotoURL = organizedPhoto.getUrl()
+            }
+        }
+        for (let entry of log_pic_urls) {
+            entry.trim();
+            let targetPhoto = getDocumentFromURL_(entry);
+            let newName = String(submission.card_number) + "_LP_" + String(log_iterant);
+            if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
+                let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
+                newPhotos.push(organizedPhoto);
+            }
+        }
+    }
+
+    // at this point, all I need to do is mark things as pulled and the sorting of photos is done.
+    // I also need to add a cache locker so that I don't end up with duplicates.
+
+
+}
 
 
 
@@ -378,50 +447,4 @@ function getDocumentFromURL_(url):GoogleAppsScript.Drive.File | null {
         console.log(error)
         return null
     }
-}
-function moveNewPhotosToFolders() {
-    let rsdIn1 = new RawSheetData(responseConfig)
-    let log_responses = new SheetData(rsdIn1)
-
-    let data = log_responses.getData()
-    let rows_pulled = data.length
-
-    let logData: kiDataClass = new kiDataClass(data)
-    
-    let photoFolder = getPhotoFolder()
-
-    // @ts-expect-error I know this is maybe not the best form, but I can almost guarantee this format, and it makes things easier down the line.  #watchme
-    let start_data:log_data[] = logData.keepMatchingByKey("pulled", [""]).end
-    let newPhotos:GoogleAppsScript.Drive.File[] = []
-    for (let submission of start_data) {
-        let gas_pic_urls:string[] = submission.gas_pics.split(",")
-        let log_pic_urls: string[] = submission.log_pics.split(",")
-        let gas_iterant: number = 1
-        let log_iterant: number = 1
-        // GR for gas, LB for log books
-        let subFolders :string[]= [String(submission.report_year),submission.report_month]
-        for (let entry of gas_pic_urls) {
-            entry.trim()
-            let targetPhoto = getDocumentFromURL_(entry)
-            let newName = String(submission.card_number) + "_GR_" + String(gas_iterant)
-            if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
-                let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName) 
-                newPhotos.push(organizedPhoto)
-            }
-        }
-        for (let entry of log_pic_urls) {
-            entry.trim();
-            let targetPhoto = getDocumentFromURL_(entry);
-            let newName = String(submission.card_number) + "_LP_" + String(log_iterant);
-            if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
-                let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
-                newPhotos.push(organizedPhoto);
-            }
-        }
-    }
-
-    // at this point, all I need to do is mark things as pulled and the sorting of photos is done.
-    // I also need to add a cache locker so that I don't end up with duplicates.
-
-
 }
