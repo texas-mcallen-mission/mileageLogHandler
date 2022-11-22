@@ -149,6 +149,27 @@ function TEST_full_lock() {
     //     console.log("primary already locked");
     // }
 }
+
+function TEST_lockerData() {
+    let locker = new doubleCacheLock()
+    let start_data = locker.getData()
+    locker.unlockPrimary()
+    locker.unlockSecondary()
+    let unlocked_data = locker.getData()
+    locker.lockPrimary()
+    locker.lockSecondary()
+    let final_data = locker.getData()
+
+    let datas = [start_data, unlocked_data, final_data];
+    for (let key in start_data) {
+        start_data.primary.lastUpdate
+        if (start_data[key]["lastUpdate"] == unlocked_data[key]["lastUpdate"] || unlocked_data[key]["lastUpdate"] == final_data[key]["lastUpdate"]) {
+            console.log("no change for ",key)
+        }
+    }
+    
+    console.log(locker.getData(),locker.minLine)
+}
 interface manyPresentations {
     [index:string]:GoogleAppsScript.Slides.Presentation
 }
@@ -184,7 +205,8 @@ class doubleCacheLock {
     secondaryStr: string = "Lock2";
     maxLineKey:string = "maxLine"
     cacheObj: GoogleAppsScript.Cache.Cache;
-    expiration:number = 30*60 // 30 minutes * 60 seconds each
+    expiration: number = 30 * 60; // 30 minutes * 60 seconds each
+    debug = true
 
     constructor() {
         this.cacheObj = CacheService.getScriptCache();
