@@ -126,7 +126,11 @@ function checkTime_(startTime: Date,maxTimeInMinutes:number) :boolean{
         return false
     }
 }
+function TEST_clearCache() {
+    let locker = new doubleCacheLock()
+    locker.unlockEverything()
 
+}
 function TEST_setPrimaryLock() {
     let locker = new doubleCacheLock();
     let preStatus = locker.isPrimaryLocked;
@@ -273,6 +277,7 @@ class doubleCacheLock {
     unlockEverything() {
         this.internalLocker(this.prefix + this.primaryStr, false);
         this.internalLocker(this.prefix + this.secondaryStr, true)
+        this.minLine = 0
     }
     get minLine(): number {
         let lineKey = this.prefix + this.maxLineKey
