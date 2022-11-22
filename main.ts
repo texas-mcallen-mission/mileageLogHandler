@@ -9,6 +9,110 @@ interface cacheEntry {
     lastUpdate: number;
 }
 
+function runUpdates(): void{
+    // step zero: cachelock - make sure we can actually run :)
+    let locker = new doubleCacheLock()
+    let minRow = 0
+    let isSecondary = false
+    if (locker.isPrimaryLocked) {
+        if (locker.isSecondaryLocked) {
+            console.error("Full lockout detected, exiting!")
+            return // Should kill the program.
+        } else {
+            locker.lockSecondary()
+            minRow = locker.minLine
+            isSecondary = true
+            if (minRow == 0) {
+                return; // avoiding another way this thing can break
+            }
+        }
+    } else {
+        locker.lockPrimary()
+    }
+
+    let responseRSD = new RawSheetData(responseConfig)
+    let responseSheet = new SheetData(responseRSD)
+    let outputRSD = new RawSheetData(datastoreConfig)
+    let outputSheet = new SheetData(outputRSD)
+
+    let rawResponses = responseSheet.getData()
+
+    // cachelock: small check to make sure that we don't need to run.
+    if (isSecondary && rawResponses.length <= minRow) {
+        return // we don't need to do anything if there's no entries.
+    }
+
+    let maxRow = rawResponses.length
+    
+    // cachelock: now it's time to set the min allowable row and enable secondary executions.
+    locker.minLine = maxRow + 1
+    locker.unlockSecondary()
+
+
+    let responseData = new kiDataClass(rawResponses)
+    let iterantKey = "iterant"
+    
+    responseData.addIterant(iterantKey);
+    responseData.removeMatchingByKey("pulled", [true])
+    
+    let pulledRows: number[] = []
+    
+    let slideData: slideDataEntry[] = convertKisToSlideEntries(outputSheet.getData());
+    let newData: slideDataEntry[] = [];
+    // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
+
+    let presentationCache: manyPresentations = {}
+
+
+    
+
+    for (let rawResponse of responseData.data) {
+        let response = convertKiEntryToLogResponse(rawResponse)
+        let presentationString = String(response.report_year) + response.report_month
+        let presentation:GoogleAppsScript.Slides.Presentation
+        if (presentationCache.hasOwnProperty(presentationString)) {
+            presentation = presentationCache[presentationString]
+        } else {
+            presentation = getLogbook(response.report_year, response.report_month)
+            presentationCache[presentationString] = presentation
+        }
+        // build index, because it gets out of date
+        let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData);
+        slideData.push(newSlides);
+        newData.push(newSlides);
+        pulledRows.push(rawResponse[iterantKey])
+    }
+    outputSheet.insertData(newData)
+    
+    let column = responseSheet.getIndex("pulled")
+    for (let entry of pulledRows) {
+        // entry *might* need an offset.
+        // JUMPER comment
+        responseSheet.directEdit(entry, column, [[true]],true)
+    }
+
+
+    if (!isSecondary) {
+        locker.unlockEverything()
+    } else {
+        console.log("exiting, not unlocking primary")
+    }
+    
+}
+
+function setPrimaryLock() {
+    let locker = new doubleCacheLock();
+    let preStatus = locker.isPrimaryLocked;
+    if (!preStatus) {
+        console.log("locked Primary");
+    } else {
+        console.log("primary already locked");
+    }
+}
+interface manyPresentations {
+    [index:string]:GoogleAppsScript.Slides.Presentation
+}
+
 function parseDoubleLockValue(cacheVal: string | null): cacheEntry {
     let output: cacheEntry = {
         active: false, // these are the default values; this might want to be modified in the future.
@@ -108,19 +212,21 @@ class doubleCacheLock {
         this.internalLocker(this.prefix + this.primaryStr, false);
         this.internalLocker(this.prefix + this.secondaryStr, true)
     }
-    get minLine(): number | null {
+    get minLine(): number {
         let lineKey = this.prefix + this.maxLineKey
         let cacheLockVal = this.cacheObj.get(lineKey)
         if (cacheLockVal) {
             return +cacheLockVal
         } else {
-            return null
+            return 0 // I *think* this should work- if there's no activity, then there shouldn't be any problems here, right?
         }
     }
-    set minLine(line: number | null) {
-        if (line) {
+    set minLine(line: number) {
+        if (typeof line == typeof 12) {
             let lineKey = this.prefix + this.maxLineKey
             this.cacheObj.put(lineKey,String(line))
+        } else {
+            console.error("minLine not number");
         }
     }
 }
