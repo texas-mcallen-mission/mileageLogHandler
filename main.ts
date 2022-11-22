@@ -129,7 +129,15 @@ function checkTime_(startTime: Date,maxTimeInMinutes:number) :boolean{
 function TEST_clearCache() {
     let locker = new doubleCacheLock()
     locker.unlockEverything()
+    TEST_getStatus(locker)
+}
 
+function TEST_getStatus(locker:doubleCacheLock | undefined = undefined) {
+    if (!locker) {
+        locker = new doubleCacheLock()
+        
+    }
+    console.log(locker.getData())
 }
 function TEST_setPrimaryLock() {
     let locker = new doubleCacheLock();
@@ -141,6 +149,7 @@ function TEST_setPrimaryLock() {
     } else {
         console.log("primary already locked");
     }
+    TEST_getStatus(locker);
 }
 function TEST_full_lock() {
     let locker = new doubleCacheLock();
@@ -152,6 +161,7 @@ function TEST_full_lock() {
     // } else {
     //     console.log("primary already locked");
     // }
+    TEST_getStatus(locker);
 }
 
 function TEST_lockerData() {
@@ -172,7 +182,8 @@ function TEST_lockerData() {
         }
     }
     
-    console.log(locker.getData(),locker.minLine)
+    console.log(locker.getData(), locker.minLine)
+    TEST_getStatus(locker);
 }
 interface manyPresentations {
     [index:string]:GoogleAppsScript.Slides.Presentation
@@ -277,7 +288,7 @@ class doubleCacheLock {
     }
     unlockEverything() {
         this.internalLocker(this.prefix + this.primaryStr, false);
-        this.internalLocker(this.prefix + this.secondaryStr, true)
+        this.internalLocker(this.prefix + this.secondaryStr, false)
         this.minLine = 0
     }
     get minLine(): number {
