@@ -11,6 +11,7 @@ interface cacheEntry {
 
 function runUpdates(): void{
     let startTime = new Date()
+    let softCutoffInMinutes = 0.5
     // step zero: cachelock - make sure we can actually run :)
     let locker = new doubleCacheLock()
     let minRow = 0
@@ -53,7 +54,7 @@ function runUpdates(): void{
     let responseData = new kiDataClass(rawResponses)
     let iterantKey = "iterant"
     
-    responseData.addIterant(iterantKey);
+    responseData.addIterant(iterantKey,0);
     responseData.removeMatchingByKey("pulled", [true])
     
     let pulledRows: number[] = []
@@ -65,10 +66,11 @@ function runUpdates(): void{
     let presentationCache: manyPresentations = {}
 
 
-    let loopDone = false
+    // let loopDone = false
     // TODO: add check to see if nearing end of time available to save&quit safely
-    while (checkTime(startTime, 0.5) && loopDone == false) {
-        for (let rawResponse of responseData.data) {
+    // while (checkTime(startTime, 0.5) && loopDone == false) {
+    for (let rawResponse of responseData.data) {
+        if (checkTime(startTime, softCutoffInMinutes)) {
             let response = convertKiEntryToLogResponse(rawResponse)
             let presentationString = String(response.report_year) + response.report_month
             let presentation:GoogleAppsScript.Slides.Presentation
@@ -83,9 +85,12 @@ function runUpdates(): void{
             slideData.push(newSlides);
             newData.push(newSlides);
             pulledRows.push(rawResponse[iterantKey])
+        } else {
+            break
         }
-        loopDone = true
     }
+    // loopDone = true
+    // }
     
     outputSheet.insertData(newData)
     
