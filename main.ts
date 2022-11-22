@@ -119,7 +119,7 @@ function runUpdates(): void{
 function checkTime(startTime: Date,maxTimeInMinutes:number) :boolean{
     let currentTime = new Date()
     let minuteToMillis = maxTimeInMinutes * 60000
-    if (currentTime.getTime() - startTime.getTime() > minuteToMillis) {
+    if (currentTime.getTime() - startTime.getTime() < minuteToMillis) {
         return true
     } else {
         console.log("Running out of time!")
@@ -127,14 +127,26 @@ function checkTime(startTime: Date,maxTimeInMinutes:number) :boolean{
     }
 }
 
-function setPrimaryLock() {
+function TEST_setPrimaryLock() {
     let locker = new doubleCacheLock();
     let preStatus = locker.isPrimaryLocked;
     if (!preStatus) {
         console.log("locked Primary");
+        locker.lockPrimary()
     } else {
         console.log("primary already locked");
     }
+}
+function TEST_full_lock() {
+    let locker = new doubleCacheLock();
+    // let preStatus = locker.isPrimaryLocked;
+    // if (!preStatus) {
+        locker.lockPrimary()
+        locker.lockSecondary()
+        console.log("locked everything");
+    // } else {
+    //     console.log("primary already locked");
+    // }
 }
 interface manyPresentations {
     [index:string]:GoogleAppsScript.Slides.Presentation
