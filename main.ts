@@ -98,7 +98,7 @@ function runUpdates(): void{
     for (let entry of pulledRows) {
         // entry *might* need an offset.
         // JUMPER comment
-        responseSheet.directEdit(entry, column, [[true]],true)
+        responseSheet.directEdit(entry + 1, column, [[true]], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
     }
 
 
