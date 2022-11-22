@@ -232,8 +232,8 @@ class doubleCacheLock {
         //@ts-ignore this is getting generated right here :)
         let output:cacheData = {};
         for (let key in keys) {
-            let cacheVal = this.cacheObj.get(key)
-            
+            let cacheVal = this.cacheObj.get(keys[key])
+            console.log(cacheVal)
             output[key] = parseDoubleLockValue(cacheVal) 
         }
         return output
