@@ -70,7 +70,7 @@ function runUpdates(): void{
     // TODO: add check to see if nearing end of time available to save&quit safely
     // while (checkTime(startTime, 0.5) && loopDone == false) {
     for (let rawResponse of responseData.data) {
-        if (checkTime(startTime, softCutoffInMinutes)) {
+        if (checkTime_(startTime, softCutoffInMinutes)) {
             let response = convertKiEntryToLogResponse(rawResponse)
             let presentationString = String(response.report_year) + response.report_month
             let presentation:GoogleAppsScript.Slides.Presentation
@@ -116,7 +116,7 @@ function runUpdates(): void{
  * @param {Date} startTime
  * @return {*}  {boolean}
  */
-function checkTime(startTime: Date,maxTimeInMinutes:number) :boolean{
+function checkTime_(startTime: Date,maxTimeInMinutes:number) :boolean{
     let currentTime = new Date()
     let minuteToMillis = maxTimeInMinutes * 60000
     if (currentTime.getTime() - startTime.getTime() < minuteToMillis) {
@@ -131,8 +131,9 @@ function TEST_setPrimaryLock() {
     let locker = new doubleCacheLock();
     let preStatus = locker.isPrimaryLocked;
     if (!preStatus) {
-        console.log("locked Primary");
         locker.lockPrimary()
+        locker.minLine = 2
+        console.log("locked Primary");
     } else {
         console.log("primary already locked");
     }
