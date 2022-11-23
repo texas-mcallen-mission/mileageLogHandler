@@ -110,6 +110,7 @@ interface logResponseEntry extends kiDataEntry {
     rc_12: number | null,
     gas_pics: string | null,
     log_pics: string | null,
+    has_stored_pics: boolean | null,
     stored_gas_pics: string | null,
     stored_log_pics: string | null
 }

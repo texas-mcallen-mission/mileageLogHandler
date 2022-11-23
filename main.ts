@@ -112,6 +112,16 @@ function runUpdates(): void{
     
 }
 
+interface outInfo {
+    has_stored_pics: boolean,
+    stored_gas_pics: string,
+    stored_log_pics: string
+}
+
+interface manyOutInfos {
+    [index:string]:outInfo
+}
+
 /**
  *  Checks to make sure that the system isn't going to fail to finish because it went overtime. 
  *
@@ -247,7 +257,10 @@ class doubleCacheLock {
     expiration: number = 30 * 60; // 30 minutes * 60 seconds each
     debug = true
 
-    constructor() {
+    constructor(prefixMod: string = "NONE") {
+        if (prefixMod != "NONE") {
+            this.prefix += prefixMod
+        }
         this.cacheObj = CacheService.getScriptCache();
 
         return this;
@@ -434,8 +447,9 @@ let responseConfig: sheetDataEntry = {
         rc_12: 41,
         gas_pics: 42,
         log_pics: 43,
-        stored_gas_pics: 44,
-        stored_log_pics: 45,
+        has_stored_pics: 44,
+        stored_gas_pics: 45,
+        stored_log_pics: 46,
     }
 };
 
