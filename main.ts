@@ -348,58 +348,58 @@ class doubleCacheLock {
 }
 
 
-function moveNewPhotosToFolders() {
-    let rsdIn1 = new RawSheetData(responseConfig);
-    let log_responses = new SheetData(rsdIn1);
+// function moveNewPhotosToFolders() {
+//     let rsdIn1 = new RawSheetData(responseConfig);
+//     let log_responses = new SheetData(rsdIn1);
 
-    let data = log_responses.getData();
-    let rows_pulled = data.length;
+//     let data = log_responses.getData();
+//     let rows_pulled = data.length;
 
-    let logData: kiDataClass = new kiDataClass(data);
+//     let logData: kiDataClass = new kiDataClass(data);
 
-    let photoFolder = getPhotoFolder();
+//     let photoFolder = getPhotoFolder();
 
-    // @ts-expect-error I know this is maybe not the best form, but I can almost guarantee this format, and it makes things easier down the line.  #watchme
-    let start_data: log_data[] = logData.keepMatchingByKey("pulled", [""]).end;
-    let newPhotos: GoogleAppsScript.Drive.File[] = [];
-    for (let submission of start_data) {
-        let gas_pic_urls: string[] = submission.gas_pics.split(",");
-        let log_pic_urls: string[] = submission.log_pics.split(",");
-        let gas_iterant: number = 1;
-        let log_iterant: number = 1;
-        // GR for gas, LB for log books
-        let subFolders: string[] = [String(submission.report_year), submission.report_month];
-        for (let entry of gas_pic_urls) {
-            entry.trim();
-            let targetPhoto = getDocumentFromURL_(entry);
-            let newName = String(submission.card_number) + "_GR_" + String(gas_iterant);
-            if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
-                let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
-                newPhotos.push(organizedPhoto);
-                // let organizedPhotoURL = organizedPhoto.getUrl()
-            }
-        }
-        for (let entry of log_pic_urls) {
-            entry.trim();
-            let targetPhoto = getDocumentFromURL_(entry);
-            let newName = String(submission.card_number) + "_LP_" + String(log_iterant);
-            if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
-                let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
-                newPhotos.push(organizedPhoto);
-            }
-        }
-    }
+//     // @ts-expect-error I know this is maybe not the best form, but I can almost guarantee this format, and it makes things easier down the line.  #watchme
+//     let start_data: log_data[] = logData.keepMatchingByKey("pulled", [""]).end;
+//     let newPhotos: GoogleAppsScript.Drive.File[] = [];
+//     for (let submission of start_data) {
+//         let gas_pic_urls: string[] = submission.gas_pics.split(",");
+//         let log_pic_urls: string[] = submission.log_pics.split(",");
+//         let gas_iterant: number = 1;
+//         let log_iterant: number = 1;
+//         // GR for gas, LB for log books
+//         let subFolders: string[] = [String(submission.report_year), submission.report_month];
+//         for (let entry of gas_pic_urls) {
+//             entry.trim();
+//             let targetPhoto = getDocumentFromURL_(entry);
+//             let newName = String(submission.card_number) + "_GR_" + String(gas_iterant);
+//             if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
+//                 let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
+//                 newPhotos.push(organizedPhoto);
+//                 // let organizedPhotoURL = organizedPhoto.getUrl()
+//             }
+//         }
+//         for (let entry of log_pic_urls) {
+//             entry.trim();
+//             let targetPhoto = getDocumentFromURL_(entry);
+//             let newName = String(submission.card_number) + "_LP_" + String(log_iterant);
+//             if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
+//                 let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
+//                 newPhotos.push(organizedPhoto);
+//             }
+//         }
+//     }
 
-    // at this point, all I need to do is mark things as pulled and the sorting of photos is done.
-    // I also need to add a cache locker so that I don't end up with duplicates.
+//     // at this point, all I need to do is mark things as pulled and the sorting of photos is done.
+//     // I also need to add a cache locker so that I don't end up with duplicates.
 
 
-}
+// }
 
 
 
 let responseConfig: sheetDataEntry = {
-    tabName: "Form Responses 1",
+    tabName: "Responses",
     headerRow: 0,
     includeSoftcodedColumns: true,
     initialColumnOrder: {
