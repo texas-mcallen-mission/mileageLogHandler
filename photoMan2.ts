@@ -133,3 +133,8 @@ function photoUpdater(): void {
     }
 
 }
+
+function TEST_unlock_photoman() {
+    let locker = new doubleCacheLock("PHOTOMANAGER")
+    locker.unlockEverything()
+}
