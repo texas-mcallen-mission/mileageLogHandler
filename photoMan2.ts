@@ -50,19 +50,12 @@ function photoUpdater(): void {
         responseData.removeSmaller(iterantKey, minRow);
     }
     let pulledRows: number[] = [];
-    let outInfo: manyOutInfos = {}
-    // let slideData: slideDataEntry[] = convertKisToSlideEntries(outputSheet.getData());
-    // let newData: slideDataEntry[] = [];
-    // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
-
-    let presentationCache: manyPresentations = {};
+    let outDataPartial: manyOutInfos = {}
 
 
-    // let loopDone = false
-    // TODO: add check to see if nearing end of time available to save&quit safely
-    // while (checkTime(startTime, 0.5) && loopDone == false) {
+
     let photoFolder = getPhotoFolder()
-    // let newPhotos: GoogleAppsScript.Drive.File[] = [];
+
     for (let rawResponse of responseData.data) {
         if (checkTime_(startTime, softCutoffInMinutes)) {
             // this chunk co-opted and modified from moveNewPhotosToFolders
@@ -107,16 +100,13 @@ function photoUpdater(): void {
             outInfo.stored_log_pics = new_log_urls.join(", ")
             outInfo.has_stored_pics = true
 
-            outInfo[rawResponse[iterantKey]] = outInfo
+            outDataPartial[rawResponse[iterantKey]] = outInfo
             pulledRows.push(rawResponse[iterantKey]);
         } else {
             break;
         }
     }
-    // loopDone = true
-    // }
 
-    // outputSheet.insertData(newData);
 
     let column = responseSheet.getIndex("has_stored_pics");
     for (let entry of pulledRows) {
@@ -127,9 +117,9 @@ function photoUpdater(): void {
         let stored_pic_col = responseSheet.getIndex("has_stored_pics")
         let log_pic_col = responseSheet.getIndex("stored_log_pics")
         let gas_pic_col = responseSheet.getIndex("stored_gas_pics")
-        output[stored_pic_col - stored_pic_col] = outInfo[entry].has_stored_pics
-        output[log_pic_col - stored_pic_col] = outInfo[entry].stored_log_pics
-        output[gas_pic_col - stored_pic_col] = outInfo[entry].stored_gas_pics
+        output[stored_pic_col - stored_pic_col] = outDataPartial[entry].has_stored_pics
+        output[log_pic_col - stored_pic_col] = outDataPartial[entry].stored_log_pics
+        output[gas_pic_col - stored_pic_col] = outDataPartial[entry].stored_gas_pics
 
         
         responseSheet.directEdit(entry + 1, column, output, true); // directEdit is zero-Indexed even though sheets is 1-indexed.
