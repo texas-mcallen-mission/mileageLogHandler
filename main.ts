@@ -56,7 +56,9 @@ function runUpdates(): void{
     
     responseData.addIterant(iterantKey,0);
     responseData.removeMatchingByKey("pulled", [true])
-    
+    if (minRow > 0) {
+        responseData.removeSmaller(iterantKey,minRow)
+    }
     let pulledRows: number[] = []
     
     let slideData: slideDataEntry[] = convertKisToSlideEntries(outputSheet.getData());
@@ -130,6 +132,28 @@ function TEST_clearCache() {
     let locker = new doubleCacheLock()
     locker.unlockEverything()
     TEST_getStatus(locker)
+}
+
+function TEST_removeSmaller() {
+    let data = [
+        { testKey: 0, words: "data0" },
+        { testKey: 1, words: "data1" },
+        { testKey: 2, words: "data2" },
+        { testKey: 3, words: "data3" },
+        { testKey: 4, words: "data4" },
+        { testKey: 5, words: "data5" },
+        { testKey: 6, words: "data6" },
+    ]
+
+    let kiData = new kiDataClass(data)
+    kiData.removeSmaller("testKey", 4)
+    let outData = kiData.end
+    if (outData.length = 3) {
+        console.log("Removal Worked!")
+    } else {
+        throw new Error("Removal failed!");
+        
+    }
 }
 
 function TEST_getStatus(locker:doubleCacheLock | undefined = undefined) {
