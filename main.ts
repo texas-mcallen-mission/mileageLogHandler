@@ -434,6 +434,8 @@ let responseConfig: sheetDataEntry = {
         rc_12: 41,
         gas_pics: 42,
         log_pics: 43,
+        stored_gas_pics: 44,
+        stored_log_pics: 45,
     }
 };
 

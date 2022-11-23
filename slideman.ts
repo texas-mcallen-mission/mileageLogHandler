@@ -18,43 +18,43 @@ For entry {gas | logbook } that hasn't been logged (or all of them if there's no
     update positional datastore
     update output datastore
 
-*/
-function tester() {
-    // load up the logbook we need - this will need to change to loading EVERY logbook we need in the future ....
-    let presentation = getLogbook(2022, "August");
-    // load up the data we're going to work with 
-    let slidedataStore: sheetDataEntry = datastoreConfig
-    let slideSheetData = new SheetData(new RawSheetData(slidedataStore))
-    let logResponseDatastore:sheetDataEntry = responseConfig
-    let entryData = new SheetData(new RawSheetData(logResponseDatastore))
+// */
+// function tester() {
+//     // load up the logbook we need - this will need to change to loading EVERY logbook we need in the future ....
+//     let presentation = getLogbook(2022, "August");
+//     // load up the data we're going to work with 
+//     let slidedataStore: sheetDataEntry = datastoreConfig
+//     let slideSheetData = new SheetData(new RawSheetData(slidedataStore))
+//     let logResponseDatastore:sheetDataEntry = responseConfig
+//     let entryData = new SheetData(new RawSheetData(logResponseDatastore))
 
-    let entryClass = new kiDataClass(entryData.getData())
-    // save where we are with responses so that we don't wind up with duplicates.  Marking as pulled happens at the very very end.
-    let responseQTY = entryClass.end.length
+//     let entryClass = new kiDataClass(entryData.getData())
+//     // save where we are with responses so that we don't wind up with duplicates.  Marking as pulled happens at the very very end.
+//     let responseQTY = entryClass.end.length
 
 
-    // filter to only new responses, and then add them to the correct thing.
-    //@ts-ignore not sure how to guarantee that this will have all of the req'd fields, but it should by definii
-    let newResponses:logResponseEntry[] = entryClass.removeMatching("pulled", true)
+//     // filter to only new responses, and then add them to the correct thing.
+//     //@ts-ignore not sure how to guarantee that this will have all of the req'd fields, but it should by definii
+//     let newResponses:logResponseEntry[] = entryClass.removeMatching("pulled", true)
 
-    let slideDataObj: kiDataClass = new kiDataClass(slideSheetData.getData())
-    //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
-    let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
-    let newData:slideDataEntry[] = []
-    // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
+//     let slideDataObj: kiDataClass = new kiDataClass(slideSheetData.getData())
+//     //blah @ts-ignore not sure how to require .end to return a particular subtype yet...
+//     let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
+//     let newData:slideDataEntry[] = []
+//     // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
     
-    for (let response of newResponses) {
-        // build index, because it gets out of date
+//     for (let response of newResponses) {
+//         // build index, because it gets out of date
 
-        let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData)
-        slideData.push(newSlides)
-        newData.push(newSlides)
-    }
-    slideSheetData.insertData(newData)
+//         let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData)
+//         slideData.push(newSlides)
+//         newData.push(newSlides)
+//     }
+//     slideSheetData.insertData(newData)
     
 
 
-}
+// }
 
 
 function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: GoogleAppsScript.Slides.Presentation, positionalIndex: positionalIndex): slideDataEntry {
@@ -73,6 +73,14 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     outEntry.gasCard = +responseData.card_number;
     outEntry.logPageIdList = String(responseData.log_pics);
     outEntry.receiptPageIdList = String(responseData.gas_pics);
+
+    // uses the moved photos in the shared drive thingy instead of the ones in the form responses if it's possible to.
+    if (responseData.stored_log_pics && responseData.stored_log_pics != "") {
+        outEntry.logPageIdList = String(responseData.stored_log_pics)
+    }
+    if (responseData.stored_gas_pics && responseData.stored_gas_pics != "") {
+        outEntry.receiptPageIdList = String(responseData.stored_gas_pics);
+    }
     outEntry.month = responseData.report_month;
     outEntry.year = responseData.report_year;
 
@@ -98,6 +106,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         // , logSlides.length)
 
     }
+    let receiptURL: string
 
     let receiptPics = outEntry.receiptPageIdList.trim().split(",");
     outEntry.receiptPageIdArray = receiptPics;

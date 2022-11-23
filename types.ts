@@ -109,7 +109,9 @@ interface logResponseEntry extends kiDataEntry {
     rp_12: string | null,
     rc_12: number | null,
     gas_pics: string | null,
-    log_pics: number | null,
+    log_pics: string | null,
+    stored_gas_pics: string | null,
+    stored_log_pics: string | null
 }
 
 function convertKiEntriesToLogResponses(entries: kiDataEntry[]): logResponseEntry[] {
@@ -166,7 +168,9 @@ function convertKiEntryToLogResponse(entry: kiDataEntry): logResponseEntry {
         rp_12: null,
         rc_12: null,
         gas_pics: null,
-        log_pics: null
+        log_pics: null,
+        stored_gas_pics: null,
+        stored_log_pics: null,
     };
     for (let key in outData) {
         if (entry.hasOwnProperty(key)) {
