@@ -220,6 +220,7 @@ function getInfoString(responseData) {
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum + newline
         + "git commit: " + GITHUB_DATA.commit_sha.slice(0, 8);
+        + "Zone:" + responseData.zone 
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
     }
