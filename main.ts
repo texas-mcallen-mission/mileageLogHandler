@@ -61,6 +61,34 @@ function runUpdates(): void{
     }
     let pulledRows: number[] = []
     
+    let contactRSD = new RawSheetData(contactConfig)
+    let contactSheet = new SheetData(contactRSD)
+
+    let contactDataRaw = new kiDataClass(contactSheet.getData())
+    contactDataRaw.calculateCombinedName()
+    let contactDataKeyed = contactDataRaw.groupByKey("areaName")
+    
+    // combine contact data with kiData so that I get zone info and stuff out
+    let contactData_keymap = {
+        "area_name": "areaName",
+        "zone": "zone",
+        "imos_vin": "vinLast8",
+        "imos_mileage":"vehicleMiles"
+    }
+    // for (let rawResponse of responseData.data) {
+    //     let response = convertKiEntryToLogResponse(rawResponse)
+    //     if (test.hasOwnProperty(response.area_name)) {
+    //         let areaInfo = test[response.area_name]
+            
+    //         for (let key in keymap) {
+    //             if (areaInfo.hasOwnProperty(keymap[key])) {
+    //                 response[key] = areaInfo[keymap[key]]
+    //             }
+    //         }
+    //     }
+    // }
+
+
     let slideData: slideDataEntry[] = convertKisToSlideEntries(outputSheet.getData());
     let newData: slideDataEntry[] = [];
     // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
@@ -73,7 +101,25 @@ function runUpdates(): void{
     // while (checkTime(startTime, 0.5) && loopDone == false) {
     for (let rawResponse of responseData.data) {
         if (checkTime_(startTime, softCutoffInMinutes)) {
-            let response = convertKiEntryToLogResponse(rawResponse)
+            let response: logResponseEntry = convertKiEntryToLogResponse(rawResponse)
+            
+            // adding in IMOS data
+            if (contactDataKeyed.hasOwnProperty(response.area_name)) {
+                let areaInfo = contactDataKeyed[response.area_name];
+
+                for (let key in contactData_keymap) {
+                    if (areaInfo.hasOwnProperty(contactData_keymap[key])) {
+                        response[key] = areaInfo[contactData_keymap[key]];
+                    }
+                }
+            } else {
+                console.error("unable to find data for "+response.area_name)
+            }
+
+
+            // and now to the rest of the stuff.
+
+
             let presentationString = String(response.report_year) + response.report_month
             let presentation:GoogleAppsScript.Slides.Presentation
             if (presentationCache.hasOwnProperty(presentationString)) {
@@ -91,8 +137,7 @@ function runUpdates(): void{
             break
         }
     }
-    // loopDone = true
-    // }
+
     
     outputSheet.insertData(newData)
     
@@ -396,8 +441,40 @@ class doubleCacheLock {
 
 // }
 
+// CONFIGURATION
 
+let contactConfig: sheetDataEntry = {
+    tabName: "Contact Data",
+    headerRow: 0,
+    includeSoftcodedColumns: true,
+    initialColumnOrder: {
+        dateContactGenerated: 0,
+        areaEmail: 1,
+        areaName: 2,
+        name1: 3,
+        position1: 4,
+        isTrainer1: 5,
+        name2: 6,
+        position2: 7,
+        isTrainer2: 8,
+        name3: 9,
+        position3: 10,
+        isTrainer3: 11,
+        district: 12,
+        zone: 13,
+        unitString: 14,
+        hasMultipleUnits: 15,
+        languageString: 16,
+        isSeniorCouple: 17,
+        isSisterArea: 18,
+        hasVehicle: 19,
+        vehicleMiles: 20,
+        vinLast8: 21,
+        aptAddress: 22,
+    }
+}
 
+// make sure to update the interface in types as well!
 let responseConfig: sheetDataEntry = {
     tabName: "Responses",
     headerRow: 0,
@@ -450,6 +527,10 @@ let responseConfig: sheetDataEntry = {
         has_stored_pics: 44,
         stored_gas_pics: 45,
         stored_log_pics: 46,
+        combined_names: 47,
+        zone: 48,
+        imos_vin: 49,
+        imos_mileage: 50,
     }
 };
 
