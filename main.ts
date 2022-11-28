@@ -79,7 +79,7 @@ function runUpdates(): void{
         "zone": "zone",
         "imos_vin": "vinLast8",
         "imos_mileage": "vehicleMiles",
-        "combinedName":"combined_names"
+        "combined_names":"combinedName"
     }
     // for (let rawResponse of responseData.data) {
     //     let response = convertKiEntryToLogResponse(rawResponse)
