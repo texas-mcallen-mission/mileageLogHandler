@@ -109,7 +109,8 @@ function runUpdates(): void{
             
             // adding in IMOS data
             if (contactDataKeyed.hasOwnProperty(response.area_name)) {
-                let areaInfo = contactDataKeyed[response.area_name];
+                // console.log(contactDataKeyed)
+                let areaInfo = contactDataKeyed[response.area_name][0];
 
                 for (let key in contactData_keymap) {
                     if (areaInfo.hasOwnProperty(contactData_keymap[key])) {
