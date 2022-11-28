@@ -9,6 +9,10 @@ interface cacheEntry {
     lastUpdate: number;
 }
 
+let config = {
+    disableMarkingPulled:true
+}
+
 function runUpdates(): void{
     let startTime = new Date()
     let softCutoffInMinutes = 0.5
@@ -145,7 +149,11 @@ function runUpdates(): void{
     for (let entry of pulledRows) {
         // entry *might* need an offset.
         // JUMPER comment
-        responseSheet.directEdit(entry + 1, column, [[true]], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
+        let output:any[] = [true]
+        if (config.disableMarkingPulled == true) {
+            output = [GITHUB_DATA.commit_sha.slice(0,8)]
+        }
+        responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
     }
 
 
