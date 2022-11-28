@@ -166,7 +166,7 @@ function runUpdates(): void{
             data["pulled"] = [GITHUB_DATA.commit_sha.slice(0,8)+"WORD"]
         }
         // responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
-        responseSheet.directModify(targetRow, data)
+        responseSheet.directModify(targetRow+1, data)
     }
 
 
