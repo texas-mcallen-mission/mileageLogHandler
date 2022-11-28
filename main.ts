@@ -64,6 +64,7 @@ function runUpdates(): void{
         responseData.removeSmaller(iterantKey,minRow)
     }
     let pulledRows: number[] = []
+    let rowData :kiDataEntry[] = []
     
     let contactRSD = new RawSheetData(contactConfig)
     let contactSheet = new SheetData(contactRSD)
@@ -77,7 +78,8 @@ function runUpdates(): void{
         "area_name": "areaName",
         "zone": "zone",
         "imos_vin": "vinLast8",
-        "imos_mileage":"vehicleMiles"
+        "imos_mileage": "vehicleMiles",
+        "combinedName":"combinedName"
     }
     // for (let rawResponse of responseData.data) {
     //     let response = convertKiEntryToLogResponse(rawResponse)
@@ -106,7 +108,11 @@ function runUpdates(): void{
     for (let rawResponse of responseData.data) {
         if (checkTime_(startTime, softCutoffInMinutes)) {
             let response: logResponseEntry = convertKiEntryToLogResponse(rawResponse)
-            
+            let IMOS_output: kiDataEntry = {}
+            if (!config.disableMarkingPulled) {
+                IMOS_output["pulled"] = true
+            }
+
             // adding in IMOS data
             if (contactDataKeyed.hasOwnProperty(response.area_name)) {
                 // console.log(contactDataKeyed)
@@ -114,7 +120,9 @@ function runUpdates(): void{
 
                 for (let key in contactData_keymap) {
                     if (areaInfo.hasOwnProperty(contactData_keymap[key])) {
-                        response[key] = areaInfo[contactData_keymap[key]];
+                        let data = areaInfo[contactData_keymap[key]]
+                        response[key] = data;
+                        IMOS_output[key] = data
                     }
                 }
             } else {
@@ -138,6 +146,7 @@ function runUpdates(): void{
             slideData.push(newSlides);
             newData.push(newSlides);
             pulledRows.push(rawResponse[iterantKey])
+            rowData.push(IMOS_output)
         } else {
             break
         }
@@ -147,14 +156,17 @@ function runUpdates(): void{
     outputSheet.insertData(newData)
     
     let column = responseSheet.getIndex("pulled")
-    for (let entry of pulledRows) {
+    for (let i = 0; i < pulledRows.length; i++) {
+        let targetRow = pulledRows[i]
+        let data  = rowData[i]
         // entry *might* need an offset.
         // JUMPER comment
-        let output:any[] = [true]
+        // let output:any[] = [true]
         if (config.disableMarkingPulled == true) {
-            output = [GITHUB_DATA.commit_sha.slice(0,8)]
+            data["pulled"] = [GITHUB_DATA.commit_sha.slice(0,8)+"WORD"]
         }
-        responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
+        // responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
+        responseSheet.directModify(targetRow, data)
     }
 
 
