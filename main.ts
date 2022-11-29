@@ -9,6 +9,41 @@ interface cacheEntry {
     lastUpdate: number;
 }
 
+function updateAreaNames() {
+    let formURL = config.response_form_url
+    if (GITHUB_SECRET_DATA.hasOwnProperty("response_form_url")) {
+        formURL = GITHUB_SECRET_DATA.response_form_url
+    }
+
+    let contactRSD = new RawSheetData(contactConfig);
+    let contactSheet = new SheetData(contactRSD);
+
+    let contactData = new kiDataClass(contactSheet.getData());
+    let areaNames = contactData.getUniqueEntries("areaName")
+    let form:GoogleAppsScript.Forms.Form
+    try {
+        form = FormApp.openByUrl(formURL)
+        
+    } catch (error) {
+        console.error("formApp unable to open response form")
+        return // quits the function outright.
+    }
+
+    let items = form.getItems(FormApp.ItemType.LIST)
+    let areaNameItem = undefined
+    for (let i = 0; i < items.length && typeof areaNameItem == 'undefined'; i++){
+        if (items[i].asListItem().getTitle() == config.areaNameQuestion) {
+            areaNameItem = items[i]
+        }
+    }
+    if (typeof areaNameItem == 'undefined') {
+        throw "unable to find area name question!"
+    }
+    areaNameItem.asListItem().setChoiceValues(areaNames)
+
+
+    
+}
 
 function runUpdates(): void {
     let startTime = new Date();

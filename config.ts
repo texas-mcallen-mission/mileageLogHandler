@@ -3,6 +3,8 @@ let config = {
     disableMarkingPulled: true,
     softCutoffInMinutes: 25,
     debug_mode: false,
+    response_form_url: "",
+    areaNameQuestion:"Area Name"
 };
 
 let contactConfig: sheetDataEntry = {
