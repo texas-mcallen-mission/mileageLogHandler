@@ -50,7 +50,7 @@ function photoUpdater(): void {
         responseData.removeSmaller(iterantKey, minRow);
     }
     let pulledRows: number[] = [];
-    let outDataPartial: manyOutInfos = {}
+    let outDataPartial: kiDataEntry[] = []
 
 
 
@@ -100,8 +100,8 @@ function photoUpdater(): void {
             outInfo.stored_log_pics = new_log_urls.join(", ")
             outInfo.has_stored_pics = true
 
-            outDataPartial[rawResponse[iterantKey]] = outInfo
             pulledRows.push(rawResponse[iterantKey]);
+            outDataPartial.push(outInfo)
         } else {
             break;
         }
@@ -109,20 +109,17 @@ function photoUpdater(): void {
 
 
     let column = responseSheet.getIndex("has_stored_pics");
-    for (let entry of pulledRows) {
+    for (let i = 0; i < pulledRows.length; i++) {
+        let position = pulledRows[i] + 1
+        let output = outDataPartial[i]
+
         // entry *might* need an offset.
         // JUMPER2 comment
         // calculating offsets:
-        let output = []
-        let stored_pic_col = responseSheet.getIndex("has_stored_pics")
-        let log_pic_col = responseSheet.getIndex("stored_log_pics")
-        let gas_pic_col = responseSheet.getIndex("stored_gas_pics")
-        output[stored_pic_col - stored_pic_col] = outDataPartial[entry].has_stored_pics
-        output[log_pic_col - stored_pic_col] = outDataPartial[entry].stored_log_pics
-        output[gas_pic_col - stored_pic_col] = outDataPartial[entry].stored_gas_pics
+
 
         
-        responseSheet.directEdit(entry + 1, column, output, true); // directEdit is zero-Indexed even though sheets is 1-indexed.
+        responseSheet.directModify(position, output); // directEdit is zero-Indexed even though sheets is 1-indexed.
     }
 
 
