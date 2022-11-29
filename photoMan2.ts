@@ -50,11 +50,11 @@ function photoUpdater(): void {
         responseData.removeSmaller(iterantKey, minRow);
     }
     let pulledRows: number[] = [];
-    let outDataPartial: kiDataEntry[] = []
+    let outDataPartial: kiDataEntry[] = [];
 
 
 
-    let photoFolder = getPhotoFolder()
+    let photoFolder = getPhotoFolder();
 
     for (let rawResponse of responseData.data) {
         if (checkTime_(startTime, softCutoffInMinutes)) {
@@ -63,16 +63,16 @@ function photoUpdater(): void {
                 has_stored_pics: false,
                 stored_gas_pics: '',
                 stored_log_pics: ''
-            }
+            };
             let response = convertKiEntryToLogResponse(rawResponse);
-            
+
             let gas_pic_urls: string[] = response.gas_pics.split(",");
             let log_pic_urls: string[] = response.log_pics.split(",");
             let gas_iterant: number = 1;
             let log_iterant: number = 1;
             // GR for gas, LB for log books
-            let new_gas_urls: string[] = []
-            let new_log_urls: string[] = []
+            let new_gas_urls: string[] = [];
+            let new_log_urls: string[] = [];
 
             let subFolders: string[] = [String(response.report_year), response.report_month];
             for (let entry of gas_pic_urls) {
@@ -82,7 +82,7 @@ function photoUpdater(): void {
                 if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
                     let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
                     // newPhotos.push(organizedPhoto);
-                    new_gas_urls.push(organizedPhoto.getUrl())
+                    new_gas_urls.push(organizedPhoto.getUrl());
                 }
             }
             for (let entry of log_pic_urls) {
@@ -92,16 +92,16 @@ function photoUpdater(): void {
                 if (targetPhoto) { // makes sure that getDocumentFromURL doesn't fail and return null
                     let organizedPhoto = copyToSubfolderByArray_(targetPhoto, photoFolder, subFolders, newName);
                     // newPhotos.push(organizedPhoto);
-                    new_log_urls.push(organizedPhoto.getUrl())
+                    new_log_urls.push(organizedPhoto.getUrl());
                 }
             }
 
-            outInfo.stored_gas_pics = new_gas_urls.join(", ")
-            outInfo.stored_log_pics = new_log_urls.join(", ")
-            outInfo.has_stored_pics = true
+            outInfo.stored_gas_pics = new_gas_urls.join(", ");
+            outInfo.stored_log_pics = new_log_urls.join(", ");
+            outInfo.has_stored_pics = true;
 
             pulledRows.push(rawResponse[iterantKey]);
-            outDataPartial.push(outInfo)
+            outDataPartial.push(outInfo);
         } else {
             break;
         }
@@ -110,15 +110,15 @@ function photoUpdater(): void {
 
     let column = responseSheet.getIndex("has_stored_pics");
     for (let i = 0; i < pulledRows.length; i++) {
-        let position = pulledRows[i] + 1
-        let output = outDataPartial[i]
+        let position = pulledRows[i] + 1;
+        let output = outDataPartial[i];
 
         // entry *might* need an offset.
         // JUMPER2 comment
         // calculating offsets:
 
 
-        
+
         responseSheet.directModify(position, output); // directEdit is zero-Indexed even though sheets is 1-indexed.
     }
 
@@ -132,6 +132,6 @@ function photoUpdater(): void {
 }
 
 function TEST_unlock_photoman() {
-    let locker = new doubleCacheLock("PHOTOMANAGER")
-    locker.unlockEverything()
+    let locker = new doubleCacheLock("PHOTOMANAGER");
+    locker.unlockEverything();
 }

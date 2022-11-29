@@ -42,7 +42,7 @@ For entry {gas | logbook } that hasn't been logged (or all of them if there's no
 //     let slideData: slideDataEntry[] = convertKisToSlideEntries(slideDataObj.end)
 //     let newData:slideDataEntry[] = []
 //     // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
-    
+
 //     for (let response of newResponses) {
 //         // build index, because it gets out of date
 
@@ -51,7 +51,7 @@ For entry {gas | logbook } that hasn't been logged (or all of them if there's no
 //         newData.push(newSlides)
 //     }
 //     slideSheetData.insertData(newData)
-    
+
 
 
 // }
@@ -76,7 +76,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
 
     // uses the moved photos in the shared drive thingy instead of the ones in the form responses if it's possible to.
     if (responseData.stored_log_pics && responseData.stored_log_pics != "") {
-        outEntry.logPageIdList = String(responseData.stored_log_pics)
+        outEntry.logPageIdList = String(responseData.stored_log_pics);
     }
     if (responseData.stored_gas_pics && responseData.stored_gas_pics != "") {
         outEntry.receiptPageIdList = String(responseData.stored_gas_pics);
@@ -106,7 +106,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         // , logSlides.length)
 
     }
-    let receiptURL: string
+    let receiptURL: string;
 
     let receiptPics = outEntry.receiptPageIdList.trim().split(",");
     outEntry.receiptPageIdArray = receiptPics;
@@ -142,24 +142,24 @@ function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation
     return outSlide;
 }
 
-function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string):positionalIndex {
-    let output:positionalIndex = {};
-    for (let i = 0; i > data.length; i++){
+function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string): positionalIndex {
+    let output: positionalIndex = {};
+    for (let i = 0; i > data.length; i++) {
         if (data[i].hasOwnProperty(keyToBaseOffOf) && +data[i][keyToBaseOffOf] != -1) {
-            output[+data[i][keyToBaseOffOf]] = data[i] 
+            output[+data[i][keyToBaseOffOf]] = data[i];
         }
     }
-    return output
+    return output;
 }
 
-function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentation, position: number, slideData:positionalIndex):string|null {
-    
+function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentation, position: number, slideData: positionalIndex): string | null {
+
     // thanks to this guy for this little conversion
     // https://bobbyhadz.com/blog/javascript-convert-array-of-strings-to-array-of-numbers#:~:text=To%20convert%20an%20array%20of,new%20array%20containing%20only%20numbers.
     let keys = Object.keys(slideData).map(str => {
         return Number(str);
     });
-    
+
     let bestCandidate = Infinity;
 
     // and thanks to these people for this part:
@@ -167,26 +167,26 @@ function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentati
 
     //get rid of everything bigger (or smaller???)
     // TODO greater than or equal to?  Need to test with two of the same gas card for certainty,  kinda depends on if I want second entries before or after the first ones
-    const higherCandidates = keys.filter(candidate => candidate > position)
-    
+    const higherCandidates = keys.filter(candidate => candidate > position);
+
     // loop through numbers and checks to see if next number is less bigger but still bigger
 
     higherCandidates.forEach(candidate => {
         if (candidate < bestCandidate) { bestCandidate = candidate; }
     }
 
-    )
+    );
 
     if (bestCandidate != Infinity) {
-        if (slideData[bestCandidate].hasOwnProperty("logPageIdList")){
-            let outData: string[] = slideData[bestCandidate]["logPageIdList"].split(",")
+        if (slideData[bestCandidate].hasOwnProperty("logPageIdList")) {
+            let outData: string[] = slideData[bestCandidate]["logPageIdList"].split(",");
             if (outData.length > 0 && outData[0] != "") {
-                return outData[0]
+                return outData[0];
             }
         }
     }
     // basically fat ELSE return, because the function should break at this point.
-    return null
+    return null;
 
 
 
@@ -196,14 +196,14 @@ function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentati
 // function loadImageFromId(id: string) {}
 
 enum orientEnum {
-landscape,
-portrait
+    landscape,
+    portrait
 }
 
 
 interface coordinate {
     x: number,
-    y:number
+    y: number;
 }
 
 interface slideLayoutData {
@@ -220,13 +220,13 @@ function getInfoString(responseData) {
         + "gascard: " + responseData.card_number + newline
         + "Miles Used: " + responseData.mile_sum + newline
         + "git commit: " + GITHUB_DATA.commit_sha.slice(0, 8) + newline
-        + "Zone: " + responseData.zone 
+        + "Zone: " + responseData.zone;
     if (responseData.has_forgiveness == true && +responseData.qty_forgiveness > 0) {
         infoString += newline + "Forgiveness Miles: " + responseData.qty_forgiveness;
     }
-    return infoString
+    return infoString;
 }
-function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl1: string,imageUrl2:string|null, index: number) {
+function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl1: string, imageUrl2: string | null, index: number) {
     // Step 1: Add Photo
 
     // let photo = gasSlide.insertImage()
@@ -238,17 +238,17 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     };
 
     let infoBoxData = {
-        width: (sL.width- 4*sL.borderPx)/3,
+        width: (sL.width - 4 * sL.borderPx) / 3,
         height: 110
     };
 
     let receiptBoxData = {
         width: infoBoxData.width,/*(sL.width / 3) - 2 * sL.borderPx,*/
         height: 110
-    }
+    };
 
-    let newline = "\n"
-    let infoString = getInfoString(responseData)
+    let newline = "\n";
+    let infoString = getInfoString(responseData);
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
     //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
 
@@ -258,52 +258,52 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     // Generates the receipt date:cost informations
     // groups into two batches of 6 receipts per box
-    let receiptString1: string = ""
-    let receiptString2: string = ""
-    let existentReceipts :number = 0
-    let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"]
-    let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"]
-    let maxReceiptsOneBox = 6 // 1-indexed
-    for (let i = 0; i < receiptCostKeys.length; i++){
-        let output:string = ""
-        let hasEntry = false
+    let receiptString1: string = "";
+    let receiptString2: string = "";
+    let existentReceipts: number = 0;
+    let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"];
+    let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"];
+    let maxReceiptsOneBox = 6; // 1-indexed
+    for (let i = 0; i < receiptCostKeys.length; i++) {
+        let output: string = "";
+        let hasEntry = false;
         if (responseData.hasOwnProperty(receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
-            let dateObj = new Date(responseData[receiptDateKeys[i]])
-            let formattedString:string = (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" + dateObj.getFullYear() 
-            output += formattedString + ": "
-            hasEntry = true
+            let dateObj = new Date(responseData[receiptDateKeys[i]]);
+            let formattedString: string = (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" + dateObj.getFullYear();
+            output += formattedString + ": ";
+            hasEntry = true;
         }
         if (responseData.hasOwnProperty(receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
-            output += "$ " + Number(responseData[receiptCostKeys[i]]).toFixed(2)
+            output += "$ " + Number(responseData[receiptCostKeys[i]]).toFixed(2);
             hasEntry = true;
         } else if (hasEntry) {
-            output += "N/A"
+            output += "N/A";
         }
         if (hasEntry) {
-            existentReceipts += 1
-            output += newline
+            existentReceipts += 1;
+            output += newline;
         }
 
         if (existentReceipts <= maxReceiptsOneBox) {
-            receiptString1 += output
+            receiptString1 += output;
         } else {
-            receiptString2 += output
+            receiptString2 += output;
         }
     }
 
 
-    let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx*2, sL.borderPx, receiptBoxData.width, receiptBoxData.height)
-    
+    let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx * 2, sL.borderPx, receiptBoxData.width, receiptBoxData.height);
+
     if (receiptString2 != "") {
-        let xPos = infoBoxData.width + receiptBoxData.width + sL.borderPx * 3
-        let receiptBox2 = gasSlide.insertTextBox(receiptString2,xPos,sL.borderPx,receiptBoxData.width,receiptBoxData.height)
+        let xPos = infoBoxData.width + receiptBoxData.width + sL.borderPx * 3;
+        let receiptBox2 = gasSlide.insertTextBox(receiptString2, xPos, sL.borderPx, receiptBoxData.width, receiptBoxData.height);
     }
 
-    let textMaxHeight =Math.max(infoBoxData.height,receiptBoxData.height)
+    let textMaxHeight = Math.max(infoBoxData.height, receiptBoxData.height);
 
-    let imageHeight = (sL.height - (textMaxHeight + 4*sL.borderPx))/2
+    let imageHeight = (sL.height - (textMaxHeight + 4 * sL.borderPx)) / 2;
     let top1 = textMaxHeight + sL.borderPx * 2;
-    let top2 = textMaxHeight + sL.borderPx * 3 + imageHeight
+    let top2 = textMaxHeight + sL.borderPx * 3 + imageHeight;
 
 
     if (imageUrl1) {
@@ -313,12 +313,12 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
             alignImage(photo1, orientEnum.landscape, sL, top1, imageHeight);
         }
     }
-    
+
     if (imageUrl2) {
-        let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2))
+        let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2));
         if (imageBlob2) {
-            let photo2 = gasSlide.insertImage(imageBlob2)
-            alignImage(photo2, orientEnum.landscape, sL, top2,imageHeight)
+            let photo2 = gasSlide.insertImage(imageBlob2);
+            alignImage(photo2, orientEnum.landscape, sL, top2, imageHeight);
         }
     }
 
@@ -329,38 +329,38 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
 function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl: string, index: number) {
     // Step 1: Add Photo
-    
+
     // let photo = gasSlide.insertImage()
     // WYL0 2022-10-07 : Need to figure out how to load images.  :)
-    let sL:slideLayoutData = {
+    let sL: slideLayoutData = {
         width: 612,
         height: 793,
-        borderPx:10
-    }
+        borderPx: 10
+    };
 
-    
-    let infoString = getInfoString(responseData)
-    
+
+    let infoString = getInfoString(responseData);
+
     let infoBoxData = {
         width: sL.width - 2 * sL.borderPx,
         height: 100
-    }
-    
-    let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height)
+    };
+
+    let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height);
     // console.log(gasSlide.getLayout())
 
-    let minImageHeight = infoBoxData.height + sL.borderPx
+    let minImageHeight = infoBoxData.height + sL.borderPx;
 
 
     let imageBlob = getImageBlobFromID(getIdFromUrl_(imageUrl));
     // let imageClass = loadImageFromId(imageId)
     if (imageBlob) {
-        let photo = gasSlide.insertImage(imageBlob)
-        
-        alignImage(photo, orientEnum.portrait, sL, minImageHeight)
-        
+        let photo = gasSlide.insertImage(imageBlob);
+
+        alignImage(photo, orientEnum.portrait, sL, minImageHeight);
+
     } else {
-        console.warn("Couldn't Load Mileage Log for GC# "+ responseData.card_number + " for "+ responseData.report_month + " " +responseData.report_year)
+        console.warn("Couldn't Load Mileage Log for GC# " + responseData.card_number + " for " + responseData.report_month + " " + responseData.report_year);
     }
 
 
@@ -407,7 +407,7 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     let maxHeight: number;
     let imageBoxHeight: number;
     if (maxImageHeight) {
-        maxHeight = maxImageHeight /*+ sL.borderPx * 2;*/
+        maxHeight = maxImageHeight; /*+ sL.borderPx * 2;*/
         imageBoxHeight = maxImageHeight;
     } else {
         maxHeight = sL.height - top - sL.borderPx; // NOT removing this sL.borderPx because this keeps it off the bottom if there's only one image
@@ -474,14 +474,14 @@ function alignImage(photo: GoogleAppsScript.Slides.Image, orientation: orientEnu
     }
 }
 
-function getImageBlobFromID(imageId:string):GoogleAppsScript.Base.Blob|null {
+function getImageBlobFromID(imageId: string): GoogleAppsScript.Base.Blob | null {
     try {
         let image = DriveApp.getFileById(imageId);
         // let metaData = image.getMimeType()
         let imageBlob = image.getBlob();
-        return imageBlob
+        return imageBlob;
     } catch (e) {
-        return null
+        return null;
     }
 }
 
@@ -490,22 +490,22 @@ function getImageBlobFromID(imageId:string):GoogleAppsScript.Base.Blob|null {
 
 
 
-function getLogbook(year:string|number,month:string):GoogleAppsScript.Slides.Presentation {
+function getLogbook(year: string | number, month: string): GoogleAppsScript.Slides.Presentation {
     // step 1: get the containing folder
-    let parentFolder = getSlideFolder()
+    let parentFolder = getSlideFolder();
 
-    let fileIt = parentFolder.getFiles()
-    let targetFilename = month + " " + String(year) + " autoLog"
-    let files: GoogleAppsScript.Drive.File[] = []
-    
+    let fileIt = parentFolder.getFiles();
+    let targetFilename = month + " " + String(year) + " autoLog";
+    let files: GoogleAppsScript.Drive.File[] = [];
+
     while (fileIt.hasNext()) {
-        files.push(fileIt.next())
+        files.push(fileIt.next());
     }
 
     for (let file of files) {
         if (file.getName() == targetFilename) {
-            let presentation = SlidesApp.openById(file.getId())
-            return presentation
+            let presentation = SlidesApp.openById(file.getId());
+            return presentation;
         }
     }
     // if it's not there, we create a template
@@ -518,40 +518,40 @@ function getLogbook(year:string|number,month:string):GoogleAppsScript.Slides.Pre
             let newOne = template.makeCopy(targetFilename, parentFolder);
             let newId = newOne.getId();
             let presentationOut = SlidesApp.openById(newId);
-            modifyTitlePage(presentationOut, year, month)
+            modifyTitlePage(presentationOut, year, month);
             return presentationOut;
         } catch (error) {
             console.warn(error);
         }
     }
 
-    let newBoi = SlidesApp.create(targetFilename)
+    let newBoi = SlidesApp.create(targetFilename);
     // move to the right folder
-    let driveFile = DriveApp.getFileById(newBoi.getId())
-    driveFile.moveTo(parentFolder)
-    console.error("Couldn't find template, so you get lame stuff")
-    return newBoi
+    let driveFile = DriveApp.getFileById(newBoi.getId());
+    driveFile.moveTo(parentFolder);
+    console.error("Couldn't find template, so you get lame stuff");
+    return newBoi;
 
 }
 
 
 
-function modifyTitlePage(presentation: GoogleAppsScript.Slides.Presentation,year:string|number,month:string) {
-    let slides = presentation.getSlides()
+function modifyTitlePage(presentation: GoogleAppsScript.Slides.Presentation, year: string | number, month: string) {
+    let slides = presentation.getSlides();
     if (slides.length > 0) {
-        let baseslide = slides[0]
-        let subtitleString = month + " " + String(year)
+        let baseslide = slides[0];
+        let subtitleString = month + " " + String(year);
         try {
-            baseslide.replaceAllText("DATE_STRING", subtitleString, true)
+            baseslide.replaceAllText("DATE_STRING", subtitleString, true);
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
         try {
-            baseslide.replaceAllText("Click to add subtitle", subtitleString)
-            
+            baseslide.replaceAllText("Click to add subtitle", subtitleString);
+
         } catch (error) {
-            console.warn("below error is because it couldn't find something to replace.")
-            console.log(error)
+            console.warn("below error is because it couldn't find something to replace.");
+            console.log(error);
         }
     }
 }
