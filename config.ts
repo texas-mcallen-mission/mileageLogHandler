@@ -1,6 +1,7 @@
 
 let config = {
-    disableMarkingPulled: true
+    disableMarkingPulled: true,
+    softCutoffInMinutes:25
 };
 
 let contactConfig: sheetDataEntry = {

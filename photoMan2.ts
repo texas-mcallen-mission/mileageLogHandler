@@ -1,7 +1,7 @@
 
 function photoUpdater(): void {
     let startTime = new Date();
-    let softCutoffInMinutes = 0.5;
+    let softCutoffInMinutes = config.softCutoffInMinutes;
     // step zero: cachelock - make sure we can actually run :)
     let locker = new doubleCacheLock("PHOTOMANAGER");
     let minRow = 0;
