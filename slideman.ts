@@ -307,18 +307,28 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
 
     if (imageUrl1) {
-        let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1));
-        if (imageBlob1) {
-            let photo1 = gasSlide.insertImage(imageBlob1);
-            alignImage(photo1, orientEnum.landscape, sL, top1, imageHeight);
+        try {
+            let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1));
+            if (imageBlob1) {
+                let photo1 = gasSlide.insertImage(imageBlob1);
+                alignImage(photo1, orientEnum.landscape, sL, top1, imageHeight);
+            }
+            
+        } catch (error) {
+            console.error("unable to load image for",imageUrl1)
         }
     }
 
     if (imageUrl2) {
-        let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2));
-        if (imageBlob2) {
-            let photo2 = gasSlide.insertImage(imageBlob2);
-            alignImage(photo2, orientEnum.landscape, sL, top2, imageHeight);
+        try {
+            let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2));
+            if (imageBlob2) {
+                let photo2 = gasSlide.insertImage(imageBlob2);
+                alignImage(photo2, orientEnum.landscape, sL, top2, imageHeight);
+            }
+            
+        } catch (error) {
+            console.error("unable to insert image for",imageUrl2)
         }
     }
 
@@ -355,9 +365,14 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let imageBlob = getImageBlobFromID(getIdFromUrl_(imageUrl));
     // let imageClass = loadImageFromId(imageId)
     if (imageBlob) {
-        let photo = gasSlide.insertImage(imageBlob);
-
-        alignImage(photo, orientEnum.portrait, sL, minImageHeight);
+        try {
+            let photo = gasSlide.insertImage(imageBlob);
+    
+            alignImage(photo, orientEnum.portrait, sL, minImageHeight);
+            
+        } catch (error) {
+            console.error("unable to load log image for ",imageUrl)
+        }
 
     } else {
         console.warn("Couldn't Load Mileage Log for GC# " + responseData.card_number + " for " + responseData.report_month + " " + responseData.report_year);
