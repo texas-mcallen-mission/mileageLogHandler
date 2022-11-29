@@ -4,7 +4,8 @@ let config = {
     softCutoffInMinutes: 25,
     debug_mode: false,
     response_form_url: "",
-    areaNameQuestion:"Area Name"
+    areaNameQuestion: "Area Name",
+    photoArchive_FolderID:""
 };
 
 let contactConfig: sheetDataEntry = {
