@@ -1,105 +1,540 @@
-let sheetConfig: sheetDataEntry = {
-    tabName: "Form Responses",
-    headerRow: 0,
-    includeSoftcodedColumns: true,
-    initialColumnOrder: {
-        timestamp: 1,
-        area_name: 2,
-        email: 3,
-        report_month: 4,
-        report_year: 5,
-        pulled: 6,
-        car_year: 7,
-        car_make: 8,
-        car_model: 9,
-        car_lpn: 10,
-        car_vin_five: 11,
-        card_number: 12,
-        odo_start: 13,
-        odo_end: 14,
-        mile_sum: 15,
-        has_forgiveness: 16,
-        qty_forgiveness: 17,
-        forgive_types: 18,
-        rp_1: 19,
-        rc_1: 20,
-        rp_2: 21,
-        rc_2: 22,
-        rp_3: 23,
-        rc_3: 24,
-        rp_4: 25,
-        rc_4: 26,
-        rp_5: 27,
-        rc_5: 28,
-        rp_6: 29,
-        rc_6: 30,
-        rp_7: 31,
-        rc_7: 32,
-        rp_8: 33,
-        rc_8: 34,
-        rp_9: 35,
-        rc_9: 36,
-        rp_10: 37,
-        rc_10: 38,
-        rp_11: 39,
-        rc_11: 40,
-        rp_12: 41,
-        rc_12: 42,
-        gas_pics: 43,
-        log_pics: 44,
-    }
-};
 
-interface folderReturn {
-    id: string,
-    folder: GoogleAppsScript.Drive.Folder
+
+
+
+
+
+interface cacheEntry {
+    active: boolean,
+    lastUpdate: number;
 }
 
-function getBaseFolder():folderReturn {
+function updateAreaNames() {
+    let formURL = config.response_form_url
+    if (GITHUB_SECRET_DATA.hasOwnProperty("response_form_url")) {
+        formURL = GITHUB_SECRET_DATA.response_form_url
+    }
+
+    let contactRSD = new RawSheetData(contactConfig);
+    let contactSheet = new SheetData(contactRSD);
+
+    let contactData = new kiDataClass(contactSheet.getData());
+    let areaNames = contactData.getUniqueEntries("areaName")
+    let form:GoogleAppsScript.Forms.Form
+    try {
+        form = FormApp.openByUrl(formURL)
+        
+    } catch (error) {
+        console.error("formApp unable to open response form")
+        return // quits the function outright.
+    }
+
+    let items = form.getItems(FormApp.ItemType.LIST)
+    let areaNameItem = undefined
+    for (let i = 0; i < items.length && typeof areaNameItem == 'undefined'; i++){
+        if (items[i].asListItem().getTitle() == config.areaNameQuestion) {
+            areaNameItem = items[i]
+        }
+    }
+    if (typeof areaNameItem == 'undefined') {
+        throw "unable to find area name question!"
+    }
+    areaNameItem.asListItem().setChoiceValues(areaNames)
+
+
+    
+}
+
+function runUpdates(): void {
+    let startTime = new Date();
+    let softCutoffInMinutes = config.softCutoffInMinutes;
+    // step zero: cachelock - make sure we can actually run :)
+    let locker = new doubleCacheLock();
+    let minRow = 0;
+    let isSecondary = false;
+    if (locker.isPrimaryLocked) {
+        if (locker.isSecondaryLocked) {
+            console.error("Full lockout detected, exiting!");
+            return; // Should kill the program.
+        } else {
+            locker.lockSecondary();
+            minRow = locker.minLine;
+            isSecondary = true;
+            if (minRow == 0) {
+                return; // avoiding another way this thing can break
+            }
+        }
+    } else {
+        locker.lockPrimary();
+    }
+
+    let responseRSD = new RawSheetData(responseConfig);
+    let responseSheet = new SheetData(responseRSD);
+    let outputRSD = new RawSheetData(datastoreConfig);
+    let outputSheet = new SheetData(outputRSD);
+
+    let rawResponses = responseSheet.getData();
+
+    // cachelock: small check to make sure that we don't need to run.
+    if (isSecondary && rawResponses.length <= minRow) {
+        return; // we don't need to do anything if there's no entries.
+    }
+
+    let maxRow = rawResponses.length;
+
+    // cachelock: now it's time to set the min allowable row and enable secondary executions.
+    locker.minLine = maxRow + 1;
+    locker.unlockSecondary();
+
+
+    let responseData = new kiDataClass(rawResponses);
+    let iterantKey = "iterant";
+
+    responseData.addIterant(iterantKey, 0);
+    responseData.removeMatchingByKey("pulled", [true]);
+    if (minRow > 0) {
+        responseData.removeSmaller(iterantKey, minRow);
+    }
+    let pulledRows: number[] = [];
+    let rowData: kiDataEntry[] = [];
+
+    let contactRSD = new RawSheetData(contactConfig);
+    let contactSheet = new SheetData(contactRSD);
+
+    let contactDataRaw = new kiDataClass(contactSheet.getData());
+    contactDataRaw.calculateCombinedName();
+    let contactDataKeyed = contactDataRaw.groupByKey("areaName");
+
+    // combine contact data with kiData so that I get zone info and stuff out
+    let contactData_keymap = {
+        "area_name": "areaName",
+        "zone": "zone",
+        "imos_vin": "vinLast8",
+        "imos_mileage": "vehicleMiles",
+        "combined_names": "combinedNames"
+    };
+    // for (let rawResponse of responseData.data) {
+    //     let response = convertKiEntryToLogResponse(rawResponse)
+    //     if (test.hasOwnProperty(response.area_name)) {
+    //         let areaInfo = test[response.area_name]
+
+    //         for (let key in keymap) {
+    //             if (areaInfo.hasOwnProperty(keymap[key])) {
+    //                 response[key] = areaInfo[keymap[key]]
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    let slideData: slideDataEntry[] = convertKisToSlideEntries(outputSheet.getData());
+    let newData: slideDataEntry[] = [];
+    // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
+
+    let presentationCache: manyPresentations = {};
+
+
+    // let loopDone = false
+    // TODO: add check to see if nearing end of time available to save&quit safely
+    // while (checkTime(startTime, 0.5) && loopDone == false) {
+    for (let rawResponse of responseData.data) {
+        if (checkTime_(startTime, softCutoffInMinutes)) {
+            let response: logResponseEntry = convertKiEntryToLogResponse(rawResponse);
+            let IMOS_output: kiDataEntry = {};
+            if (!config.disableMarkingPulled) {
+                IMOS_output["pulled"] = true;
+            }
+
+            // adding in IMOS data
+            if (contactDataKeyed.hasOwnProperty(response.area_name)) {
+                // console.log(contactDataKeyed)
+                let areaInfo = contactDataKeyed[response.area_name][0];
+
+                for (let key in contactData_keymap) {
+                    if (areaInfo.hasOwnProperty(contactData_keymap[key])) {
+                        let data = areaInfo[contactData_keymap[key]];
+                        response[key] = data;
+                        IMOS_output[key] = data;
+                    }
+                }
+            } else {
+                console.error("unable to find data for " + response.area_name);
+            }
+
+
+            // and now to the rest of the stuff.
+
+
+            let presentationString = String(response.report_year) + response.report_month;
+            let presentation: GoogleAppsScript.Slides.Presentation;
+            if (presentationCache.hasOwnProperty(presentationString)) {
+                presentation = presentationCache[presentationString];
+            } else {
+                presentation = getLogbook(response.report_year, response.report_month);
+                presentationCache[presentationString] = presentation;
+            }
+            // build index, because it gets out of date
+            let newSlides: slideDataEntry = addSlidesForEntry(response, presentation, slideData);
+            slideData.push(newSlides);
+            newData.push(newSlides);
+            pulledRows.push(rawResponse[iterantKey]);
+            rowData.push(IMOS_output);
+        } else {
+            break;
+        }
+    }
+
+
+    outputSheet.insertData(newData);
+
+    let column = responseSheet.getIndex("pulled");
+    for (let i = 0; i < pulledRows.length; i++) {
+        let targetRow = pulledRows[i];
+        let data = rowData[i];
+        // entry *might* need an offset.
+        // JUMPER comment
+        // let output:any[] = [true]
+        if (config.disableMarkingPulled == true) {
+            data["pulled"] = [GITHUB_DATA.commit_sha.slice(0, 8) + "WORD"];
+        }
+        // responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
+        responseSheet.directModify(targetRow + 1, data);
+    }
+
+
+    if (!isSecondary) {
+        locker.unlockEverything();
+    } else {
+        console.log("exiting, not unlocking primary");
+    }
+
+}
+
+interface outInfo {
+    has_stored_pics: boolean,
+    stored_gas_pics: string,
+    stored_log_pics: string;
+}
+
+interface manyOutInfos {
+    [index: string]: outInfo;
+}
+
+/**
+ *  Checks to make sure that the system isn't going to fail to finish because it went overtime. 
+ *
+ * @param {Date} startTime
+ * @return {*}  {boolean}
+ */
+function checkTime_(startTime: Date, maxTimeInMinutes: number): boolean {
+    let currentTime = new Date();
+    let minuteToMillis = maxTimeInMinutes * 60000;
+    if (currentTime.getTime() - startTime.getTime() < minuteToMillis) {
+        return true;
+    } else {
+        console.log("Running out of time!");
+        return false;
+    }
+}
+function TEST_clearCache() {
+    let locker = new doubleCacheLock();
+    locker.unlockEverything();
+    TEST_getStatus(locker);
+}
+
+function TEST_removeSmaller() {
+    let data = [
+        { testKey: 0, words: "data0" },
+        { testKey: 1, words: "data1" },
+        { testKey: 2, words: "data2" },
+        { testKey: 3, words: "data3" },
+        { testKey: 4, words: "data4" },
+        { testKey: 5, words: "data5" },
+        { testKey: 6, words: "data6" },
+    ];
+
+    let kiData = new kiDataClass(data);
+    kiData.removeSmaller("testKey", 4);
+    let outData = kiData.end;
+    if (outData.length = 3) {
+        console.log("Removal Worked!");
+    } else {
+        throw new Error("Removal failed!");
+
+    }
+}
+
+function TEST_getStatus(locker: doubleCacheLock | undefined = undefined) {
+    if (!locker) {
+        locker = new doubleCacheLock();
+
+    }
+    console.log(locker.getData());
+}
+function TEST_setPrimaryLock() {
+    let locker = new doubleCacheLock();
+    let preStatus = locker.isPrimaryLocked;
+    if (!preStatus) {
+        locker.lockPrimary();
+        locker.minLine = 2;
+        console.log("locked Primary");
+    } else {
+        console.log("primary already locked");
+    }
+    TEST_getStatus(locker);
+}
+function TEST_full_lock() {
+    let locker = new doubleCacheLock();
+    // let preStatus = locker.isPrimaryLocked;
+    // if (!preStatus) {
+    locker.lockPrimary();
+    locker.lockSecondary();
+    console.log("locked everything");
+    // } else {
+    //     console.log("primary already locked");
+    // }
+    TEST_getStatus(locker);
+}
+
+function TEST_lockerData() {
+    let locker = new doubleCacheLock();
+    let start_data = locker.getData();
+    locker.unlockPrimary();
+    locker.unlockSecondary();
+    let unlocked_data = locker.getData();
+    locker.lockPrimary();
+    locker.lockSecondary();
+    let final_data = locker.getData();
+
+    let datas = [start_data, unlocked_data, final_data];
+    for (let key in start_data) {
+        start_data.primary.lastUpdate;
+        if (start_data[key]["lastUpdate"] == unlocked_data[key]["lastUpdate"] || unlocked_data[key]["lastUpdate"] == final_data[key]["lastUpdate"]) {
+            console.log("no change for ", key);
+        }
+    }
+
+    console.log(locker.getData(), locker.minLine);
+    TEST_getStatus(locker);
+}
+interface manyPresentations {
+    [index: string]: GoogleAppsScript.Slides.Presentation;
+}
+
+function parseDoubleLockValue(cacheVal: string | null): cacheEntry {
+    let output: cacheEntry = {
+        active: false, // these are the default values; this might want to be modified in the future.
+        lastUpdate: 0
+    };
+
+    if (cacheVal) {
+        let deString = JSON.parse(cacheVal);
+        try {
+            output.active = deString["active"];
+            output.lastUpdate = deString["lastUpdate"];
+        } catch (error) {
+            console.warn("error parsing cache");
+            return output;
+        }
+    }
+
+    return output;
+}
+
+interface cacheData {
+    primary: cacheEntry,
+    secondary: cacheEntry;
+}
+
+class doubleCacheLock {
+    prefix: string = "SLIDEMAN_CACHE";
+    primaryStr: string = "Lock1";
+    secondaryStr: string = "Lock2";
+    maxLineKey: string = "maxLine";
+    cacheObj: GoogleAppsScript.Cache.Cache;
+    expiration: number = 30 * 60; // 30 minutes * 60 seconds each
+    debug = true;
+
+    constructor(prefixMod: string = "NONE") {
+        if (prefixMod != "NONE") {
+            this.prefix += prefixMod;
+        }
+        this.cacheObj = CacheService.getScriptCache();
+
+        return this;
+    }
+
+    getKeys() {
+        let output: string[] = [];
+        output.push(this.prefix + this.primaryStr);
+        output.push(this.prefix + this.secondaryStr);
+        return output;
+    }
+
+    getData(): cacheData {
+        let key1 = this.prefix + this.primaryStr;
+        let key2 = this.prefix + this.secondaryStr;
+        // let keys = [key1, key2];
+        let keys = {
+            primary: this.prefix + this.primaryStr,
+            secondary: this.prefix + this.secondaryStr
+        };
+        //@ts-ignore this is getting generated right here :)
+        let output: cacheData = {};
+        for (let key in keys) {
+            let cacheVal = this.cacheObj.get(keys[key]);
+            console.log(cacheVal);
+            output[key] = parseDoubleLockValue(cacheVal);
+        }
+        return output;
+    }
+    internalLocker(key: string, active: boolean) {
+        let updateDate = new Date();
+        let updateTime = updateDate.getTime();
+        let entryStruct: cacheEntry = {
+            active: true,
+            lastUpdate: updateTime
+        };
+        entryStruct.active = active;
+        let entryData = JSON.stringify(entryStruct);
+        this.cacheObj.put(key, entryData);
+    }
+    get isPrimaryLocked(): boolean {
+        let data = this.getData();
+        return data.primary.active;
+    }
+    get isSecondaryLocked(): boolean {
+        let data = this.getData();
+        return data.secondary.active;
+    }
+    lockPrimary() {
+        this.internalLocker(this.prefix + this.primaryStr, true);
+
+    }
+    lockSecondary() {
+        this.internalLocker(this.prefix + this.secondaryStr, true);
+    }
+
+    unlockPrimary() {
+        this.internalLocker(this.prefix + this.primaryStr, false);
+    }
+    unlockSecondary() {
+        this.internalLocker(this.prefix + this.secondaryStr, false);
+    }
+    unlockEverything() {
+        this.internalLocker(this.prefix + this.primaryStr, false);
+        this.internalLocker(this.prefix + this.secondaryStr, false);
+        this.minLine = 0;
+    }
+    get minLine(): number {
+        let lineKey = this.prefix + this.maxLineKey;
+        let cacheLockVal = this.cacheObj.get(lineKey);
+        if (cacheLockVal) {
+            return +cacheLockVal;
+        } else {
+            return 0; // I *think* this should work- if there's no activity, then there shouldn't be any problems here, right?
+        }
+    }
+    set minLine(line: number) {
+        if (typeof line == typeof 12) {
+            let lineKey = this.prefix + this.maxLineKey;
+            this.cacheObj.put(lineKey, String(line));
+        } else {
+            console.error("minLine not number");
+        }
+    }
+}
+
+
+
+// CONFIGURATION
+
+
+function getBaseFolder(): GoogleAppsScript.Drive.Folder {
+    let photoKey = "photoArchive_FolderID";
+    // let baseFolderId;
+    if (GITHUB_SECRET_DATA.hasOwnProperty(photoKey) && GITHUB_SECRET_DATA[photoKey] != "") {
+        try {
+            let outFolder = DriveApp.getFolderById(GITHUB_SECRET_DATA[photoKey]);
+            return outFolder;
+        } catch (error) {
+            console.log("basefolder not specified / functional in github secrets");
+        }
+    } else if (config.hasOwnProperty(photoKey) && config[photoKey] != "") {
+        try {
+            let outFolder = DriveApp.getFolderById(config[photoKey])
+            return outFolder
+        } catch (error) {
+            console.log("basefolder not specified / functional in config.  defaulting to base folder of containing spreadsheet.")
+        }
+    }
+
     let sheetFile = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId());
-    let parentFolder = sheetFile.getParents()
-    let outFolder = parentFolder.next()
-    let id = outFolder.getId()
+    let parentFolder = sheetFile.getParents();
+    let outFolder = parentFolder.next();
 
-    return {
-        id: id,
-        folder:outFolder
-    }
+    return outFolder;
 }
 
-function getPhotoFolder(): folderReturn {
-    let baseFolder = getBaseFolder()
+function getPhotoFolder(): GoogleAppsScript.Drive.Folder {
 
-    let photoFolderName = "Log Photos"
-    let folderTest = baseFolder.folder.getFoldersByName(photoFolderName)
+    let baseFolder = getBaseFolder();
+
+    let photoFolderName = "Log Photos";
+    let folderTest = baseFolder.getFoldersByName(photoFolderName);
 
     // Check to see if there's a folder with a matching name
     if (folderTest.hasNext()) {
-        let folder = folderTest.next()
-        return {
-            id: folder.getId(),
-            folder:folder
-        }
+        let folder = folderTest.next();
+        return folder;
+
     } else {
-        let folder = baseFolder.folder.createFolder(photoFolderName)
-        return {
-            id: folder.getId(),
-            folder:folder
-        }
+        let folder = baseFolder.createFolder(photoFolderName);
+        return folder;
     }
 }
 
-function moveNewPhotosToFolders() {
-    let rsdIn1 = new RawSheetData(sheetConfig)
-    let log_responses = new SheetData(rsdIn1)
 
-    let data = log_responses.getData()
-    let rows_pulled = data.length
 
-    let logData:kiDataClass = new kiDataClass(data)
+// takes a folder, a drive Document, and a 2d array of subfolders, copy a thing.  Returns a GoogleAppsScript.Drive.File of the copied object.
+//
+function copyToSubfolderByArray_(document: GoogleAppsScript.Drive.File, parentFolder: GoogleAppsScript.Drive.Folder, subfolders: string[], newName: string): GoogleAppsScript.Drive.File {
+    let targetFolder = parentFolder;
+    let subFolderIterant = [...subfolders]; // yay mutatability!
 
-    logData.keepMatchingByKey("pulled", [""])
-    
-   
+    // maybe check subfolders to see if it's an array?  It's type-required though :)
+    while (subFolderIterant.length > 0) {
+        let newTarget = targetFolder.getFoldersByName(subFolderIterant[0]);
+        if (newTarget.hasNext()) {
+            targetFolder = newTarget.next();
+        } else {
+            let newTarget = targetFolder.createFolder(subFolderIterant[0]);
+            targetFolder = newTarget;
+        }
+        subFolderIterant.shift();
+    }
 
+    return document.makeCopy(newName, targetFolder);
+
+}
+
+function getIdFromUrl_(url: string): string {
+    let regexData = url.match(/[-\w]{25,}(?!.*[-\w]{25,})/);
+    if (regexData == null) {
+        return "";
+    } else {
+        return regexData.toString();
+    }
+
+}
+
+function getDocumentFromURL_(url): GoogleAppsScript.Drive.File | null {
+    let docId = getIdFromUrl_(url);
+    try {
+        let document: GoogleAppsScript.Drive.File = DriveApp.getFileById(docId);
+        return document;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
 }
