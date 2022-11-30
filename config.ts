@@ -1,6 +1,6 @@
 
 let config = {
-    disableMarkingPulled: true,
+    disableMarkingPulled: false,
     softCutoffInMinutes: 25,
     debug_mode: false,
     response_form_url: "",
