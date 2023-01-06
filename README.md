@@ -1,1 +1,3 @@
 # mileageLogHandler
+
+Every month, missionaries in our mission have to report the number of miles they used and how much money they spent on fuel.  This includes pictures and other stuff that become a huge pain to manage for our fleet manager guy.  This system automates converting photos submitted via Google Forms into a document that nicely and neatly arranges photos and gets everything nice and orderly.  Also requires basically zero maintenance once online.
