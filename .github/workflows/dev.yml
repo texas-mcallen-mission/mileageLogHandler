@@ -1,13 +1,14 @@
-name: Mileage Log Main
+name: dev branch
 # Copy this one into your own repository- change up the things your secrets reference if necessary, and run!
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [dev]
   release:
     types: [published]
   schedule:
     - cron: "0 0 * * SUN"
+
 
 jobs:
   clasp-update-aio:
@@ -21,7 +22,7 @@ jobs:
         REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
         USES_ORG_SECRET: true # optional.
         ORG_VISIBILITY: all # optional, default all.
-        SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
-        PARENT_ID: ${{ secrets.PARENT_ID }} # optional.
+        SCRIPT_ID: ${{ secrets.SCRIPT_ID_DEV }}
+        PARENT_ID: ${{ secrets.PARENT_ID_DEV }} # optional.
         DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }} # optional.
-        CONFIG_DATA: ${{ secrets.CONFIG_DATA }} # optional.
+        CONFIG_DATA: ${{ secrets.CONFIG_DATA_DEV }} # optional.
