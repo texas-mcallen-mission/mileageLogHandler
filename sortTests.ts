@@ -15,8 +15,10 @@ function sortTests() {
         { ki1: 44, ki2: 34, ki3: 15, ki4: "oisnoDISFN" , dateComp: "3/16/2023"},
         { ki1: 45, ki2: 26, ki3: 31, ki4: "asodidn" , dateComp: "6/11/2023"},
         { ki1: 46, ki2: 32, ki3: 26, ki4: "" , dateComp: "12/11/2022"},
-        { ki1: 47, ki2: 0, ki3: 36, ki4: "aiosnd" , dateComp: "3/02/2023"},
-        { ki1: null, ki2: 23, ki3: 13, ki4: "iodnone" , dateComp:"5/29/2023"}				
+        { ki1: 47, ki2: 0, ki3: 36, ki4: "APPLE" , dateComp: "3/02/2023"},
+        { ki1: null, ki2: 23, ki3: 13, ki4: "apple", dateComp: "5/29/2023" },
+        { ki1: null, ki2: 23, ki3: 13, ki4: "aapple", dateComp: "5/29/2023" },
+        { ki1: null, ki2: 23, ki3: 13, ki4: "Aapple", dateComp: "5/29/2023" }
 
     ]
 
@@ -42,30 +44,25 @@ function sortTests() {
 
     const class1 = new kiDataClass(array1)
     let sortArgs: sortArgs = {
-        valueType: sortTypes.integer,
+        valueType: sortTypes.unknown,
         descending: true
     }
-    const outObj1 = class1.sort("ki1", sortArgs).end
-    console.log("ob1: "+outObj1.length,array1.length)
-    console.log(class1.getDataFromKey("ki1"))
-    sortArgs.valueType = sortTypes.string
-    const outObj2 = class1.sort("ki2",sortArgs).end
-    console.log(class1.getDataFromKey("ki2"));
-    sortArgs.valueType = sortTypes.integer
-    sortArgs.descending = false
-    const outObj3 = class1.sort("ki3", sortArgs).end
-    console.log(class1.getDataFromKey("ki3"));
-    sortArgs.valueType = sortTypes.date;
-    // sortArgs.descending = false
-    const outObj4 = class1.sort("dateComp", sortArgs).end
-    console.log(class1.getDataFromKey("dateComp"));
-    // sortArgs.valueType = sortTypes.integer;
-    // sortArgs.descending = false
 
-    console.log(outObj1)
-    console.log(outObj2)
-    console.log(outObj3)
-    console.log(outObj4)
+    const sortKeys = ["ki1", "ki2", "ki3", "ki4", "dateComp"]
+    const typeKey = [sortTypes.unknown,sortTypes.number,sortTypes.number,sortTypes.string,sortTypes.date]
+    for (let i = 0; i < sortKeys.length; i++) {
+        sortArgs.valueType = typeKey[i]
+        const outObj = class1.sort(sortKeys[i], sortArgs).end
+        console.log(sortKeys[i] + " length: " + outObj.length + " original:" + array1.length)
+        console.log(class1.getDataFromKey(sortKeys[i]))
+    }
+
+
+
+    // console.log(outObj1)
+    // console.log(outObj2)
+    // console.log(outObj3)
+    // console.log(outObj4)
 
     console.log("Tests completed!")
 }
