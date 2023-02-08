@@ -1,6 +1,6 @@
 function sortTests() {
     const array1:kiDataEntry[] = [
-        { ki1:0, ki2: 37, ki3: 9, ki4: "null" ,dateComp:"3/21/2023"},
+        { ki1:0, ki2: 37, ki3: 9, ki4: null ,dateComp:"3/21/2023"},
         { ki1: 0, ki2: 9, ki3: 45, ki4: "aa" , dateComp: "12/30/2022"},
         { ki1: 11, ki2: 27, ki3: 39, ki4: "🤣" , dateComp: "2/16/2023"},
         { ki1: 16, ki2: 9, ki3: 4, ki4: "sdfionsdiog" , dateComp: "6/07/2023"},
@@ -16,7 +16,7 @@ function sortTests() {
         { ki1: 45, ki2: 26, ki3: 31, ki4: "asodidn" , dateComp: "6/11/2023"},
         { ki1: 46, ki2: 32, ki3: 26, ki4: "" , dateComp: "12/11/2022"},
         { ki1: 47, ki2: 0, ki3: 36, ki4: "aiosnd" , dateComp: "3/02/2023"},
-        { ki1: 8, ki2: 23, ki3: 13, ki4: "iodnone" , dateComp:"5/29/2023"}				
+        { ki1: null, ki2: 23, ki3: 13, ki4: "iodnone" , dateComp:"5/29/2023"}				
 
     ]
 
@@ -46,6 +46,7 @@ function sortTests() {
         descending: true
     }
     const outObj1 = class1.sort("ki1", sortArgs).end
+    console.log("ob1: "+outObj1.length,array1.length)
     console.log(class1.getDataFromKey("ki1"))
     sortArgs.valueType = sortTypes.string
     const outObj2 = class1.sort("ki2",sortArgs).end
