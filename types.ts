@@ -44,7 +44,12 @@ function convertKiToSlide(entry: kiDataEntry) {
 
     if (Object.prototype.hasOwnProperty.call(entry, "currentSlidePositionList")) {
         outEntry.currentSlidePositionList = entry["currentSlidePositionList"]
-        outEntry.currentSlidePositionArray = outEntry.currentSlidePositionList.split(",")
+        const outStrings = outEntry.currentSlidePositionList.split(",")
+        const outNumbers:number[] = []
+        for (const entry of outStrings) {
+            outNumbers.push(+entry)
+        }
+        outEntry.currentSlidePositionArray = outNumbers
     }
 
 
