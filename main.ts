@@ -46,18 +46,21 @@ function updateAreaNames() {
 }
 
 function runUpdates(): void {
+    // store start time for logging, also to make sure we don't overrun execution time.
     let startTime = new Date();
     let softCutoffInMinutes = config.softCutoffInMinutes;
     // step zero: cachelock - make sure we can actually run :)
     let locker = new doubleCacheLock();
     let minRow = 0;
     let isSecondary = false;
+    // double-cachelock
     if (locker.isPrimaryLocked) {
         if (locker.isSecondaryLocked) {
             console.error("Full lockout detected, exiting!");
             return; // Should kill the program.
         } else {
             locker.lockSecondary();
+            // only pull rows after the given row
             minRow = locker.minLine;
             isSecondary = true;
             if (minRow == 0) {
@@ -67,13 +70,16 @@ function runUpdates(): void {
     } else {
         locker.lockPrimary();
     }
+    // load up sheetData
 
-    let responseRSD = new RawSheetData(responseConfig);
-    let responseSheet = new SheetData(responseRSD);
-    let outputRSD = new RawSheetData(datastoreConfig);
-    let outputSheet = new SheetData(outputRSD);
+        // let responseRSD = new RawSheetData(responseConfig);
+    const responseSheet = new SheetData(new RawSheetData(responseConfig));
+        // let datastoreRSD = new RawSheetData(datastoreConfig);
+    const sortStoreRSD = new SheetData(new RawSheetData(datastoreConfig));
+    // let contactRSD = new RawSheetData(contactConfig);
+    const contactSheet = new SheetData(new RawSheetData(contactConfig));
 
-    let rawResponses = responseSheet.getData();
+    const rawResponses = responseSheet.getData();
 
     // cachelock: small check to make sure that we don't need to run.
     if (isSecondary && rawResponses.length <= minRow) {
@@ -98,12 +104,11 @@ function runUpdates(): void {
     let pulledRows: number[] = [];
     let rowData: kiDataEntry[] = [];
 
-    let contactRSD = new RawSheetData(contactConfig);
-    let contactSheet = new SheetData(contactRSD);
 
-    let contactDataRaw = new kiDataClass(contactSheet.getData());
-    contactDataRaw.calculateCombinedName();
-    let contactDataKeyed = contactDataRaw.groupByKey("areaName");
+
+    let contactDataClass = new kiDataClass(contactSheet.getData());
+    contactDataClass.calculateCombinedName();
+    let contactDataKeyed = contactDataClass.groupByKey("areaName");
 
     // combine contact data with kiData so that I get zone info and stuff out
     let contactData_keymap = {
@@ -127,16 +132,13 @@ function runUpdates(): void {
     // }
 
 
-    let slideData: slideDataEntry[] = convertKisToSlideEntries(outputSheet.getData());
+    let slideData: slideDataEntry[] = convertKisToSlideEntries(sortStoreRSD.getData());
     let newData: slideDataEntry[] = [];
     // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
 
     let presentationCache: manyPresentations = {};
 
 
-    // let loopDone = false
-    // TODO: add check to see if nearing end of time available to save&quit safely
-    // while (checkTime(startTime, 0.5) && loopDone == false) {
     for (let rawResponse of responseData.data) {
         if (checkTime_(startTime, softCutoffInMinutes)) {
             let response: logResponseEntry = convertKiEntryToLogResponse(rawResponse);
@@ -149,7 +151,7 @@ function runUpdates(): void {
             if (contactDataKeyed.hasOwnProperty(response.area_name)) {
                 // console.log(contactDataKeyed)
                 let areaInfo = contactDataKeyed[response.area_name][0];
-
+                // copies the data from contactData to the keys used by this one to store the same values
                 for (let key in contactData_keymap) {
                     if (areaInfo.hasOwnProperty(contactData_keymap[key])) {
                         let data = areaInfo[contactData_keymap[key]];
@@ -185,7 +187,7 @@ function runUpdates(): void {
     }
 
 
-    outputSheet.insertData(newData);
+    sortStoreRSD.insertData(newData);
 
     let column = responseSheet.getIndex("pulled");
     for (let i = 0; i < pulledRows.length; i++) {

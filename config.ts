@@ -109,16 +109,16 @@ const sheetCoreConfig: sheetCoreConfigInfo = {
 };
 
 let datastoreConfig: sheetDataEntry = {
-    tabName: "slideData",
+    tabName: "sortStore",
     headerRow: 0,
     includeSoftcodedColumns: true,
     initialColumnOrder: {
         gasCard: 0,
-        logPageIdList: 1,
-        receiptPageIdList: 2,
-        month: 3,
-        year: 4,
-        slideIdList: 5,
-        currentSlidePositionList: 6
+        // logPageIdList: 1,
+        // receiptPageIdList: 2,
+        month: 2,
+        year: 3,
+        slideIdList: 4,
+        currentSlidePositionList: 5
     }
 };
