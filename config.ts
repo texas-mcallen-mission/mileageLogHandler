@@ -118,6 +118,7 @@ let datastoreConfig: sheetDataEntry = {
         receiptPageIdList: 2,
         month: 3,
         year: 4,
-
+        slideIdList: 5,
+        currentSlidePositionList: 6
     }
 };

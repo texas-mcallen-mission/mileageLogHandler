@@ -68,6 +68,8 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         logPageIdArray: [],
         receiptPageIdArray: [],
         startPosition: -1,
+        slideIdList: '',
+        slideIdArray: []
     };
 
     outEntry.gasCard = +responseData.card_number;
@@ -89,7 +91,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     // WYLO: trying to figure out the right order for how to do this 
 
     // WYLO 2022-10-06 : need to break this out into a function properly so that I can reuse things cleanly.  Might have two functions, one for gas & one for logs, or an internal if for switching between the two.
-    let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex);
+    //let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex);
     // outEntry.startPosition = positionalIndex
 
     let logSlides: GoogleAppsScript.Slides.Slide[] = [];
@@ -98,7 +100,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     let iterant = 0;
     for (let entry of logPages) {
 
-        let logSlide = createNewSlide(targetPresentation, postSlideId);
+        let logSlide = createNewSlide(targetPresentation /*, postSlideId*/);
 
         logSlideEditor(logSlide, responseData, entry, iterant);
 
@@ -118,79 +120,82 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
             entry2url = receiptPics[i + 1];
 
         }
-        let gasSlide = createNewSlide(targetPresentation, postSlideId);
+        let gasSlide = createNewSlide(targetPresentation/*, postSlideId*/);
         gasSlideEditor(gasSlide, responseData, entry1url, entry2url, i);
 
     }
-
+    for (let slide of logSlides) {
+        outEntry.slideIdArray.push(slide.getObjectId())
+    }
     /*
         WYLO 2: not done defining types on my way to TS-verified results
 
     */
+    outEntry.slideIdList = outEntry.slideIdArray.join(",")
     return outEntry;
 
 }
-function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation, preSlide: string | null): GoogleAppsScript.Slides.Slide {
+function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation /*, preSlide: string | null*/): GoogleAppsScript.Slides.Slide {
     let outSlide: GoogleAppsScript.Slides.Slide;
-    if (preSlide != null) {
-        outSlide = targetPresentation.insertSlide(+preSlide);
-    } else {
-        outSlide = targetPresentation.appendSlide();
-    }
+    // if (preSlide != null) {
+    //     outSlide = targetPresentation.insertSlide(+preSlide);
+    // } else {
+    outSlide = targetPresentation.appendSlide();
+    // }
 
     // outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
     return outSlide;
 }
 
-function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string): positionalIndex {
-    let output: positionalIndex = {};
-    for (let i = 0; i > data.length; i++) {
-        if (data[i].hasOwnProperty(keyToBaseOffOf) && +data[i][keyToBaseOffOf] != -1) {
-            output[+data[i][keyToBaseOffOf]] = data[i];
-        }
-    }
-    return output;
-}
+// function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string): positionalIndex {
+//     let output: positionalIndex = {};
+//     for (let i = 0; i > data.length; i++) {
+//         if (data[i].hasOwnProperty(keyToBaseOffOf) && +data[i][keyToBaseOffOf] != -1) {
+//             output[+data[i][keyToBaseOffOf]] = data[i];
+//         }
+//     }
+//     return output;
+// }
 
-function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentation, position: number, slideData: positionalIndex): string | null {
+// function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentation, position: number, slideData: positionalIndex): string | null {
 
-    // thanks to this guy for this little conversion
-    // https://bobbyhadz.com/blog/javascript-convert-array-of-strings-to-array-of-numbers#:~:text=To%20convert%20an%20array%20of,new%20array%20containing%20only%20numbers.
-    let keys = Object.keys(slideData).map(str => {
-        return Number(str);
-    });
+//     // thanks to this guy for this little conversion
+//     // https://bobbyhadz.com/blog/javascript-convert-array-of-strings-to-array-of-numbers#:~:text=To%20convert%20an%20array%20of,new%20array%20containing%20only%20numbers.
+//     let keys = Object.keys(slideData).map(str => {
+//         return Number(str);
+//     });
 
-    let bestCandidate = Infinity;
+//     let bestCandidate = Infinity;
 
-    // and thanks to these people for this part:
-    // https://stackoverflow.com/questions/54554384/get-closest-but-higher-number-in-an-array
+//     // and thanks to these people for this part:
+//     // https://stackoverflow.com/questions/54554384/get-closest-but-higher-number-in-an-array
 
-    //get rid of everything bigger (or smaller???)
-    // TODO greater than or equal to?  Need to test with two of the same gas card for certainty,  kinda depends on if I want second entries before or after the first ones
-    const higherCandidates = keys.filter(candidate => candidate > position);
+//     //get rid of everything bigger (or smaller???)
+//     // TODO greater than or equal to?  Need to test with two of the same gas card for certainty,  kinda depends on if I want second entries before or after the first ones
+//     const higherCandidates = keys.filter(candidate => candidate > position);
 
-    // loop through numbers and checks to see if next number is less bigger but still bigger
+//     // loop through numbers and checks to see if next number is less bigger but still bigger
 
-    higherCandidates.forEach(candidate => {
-        if (candidate < bestCandidate) { bestCandidate = candidate; }
-    }
+//     higherCandidates.forEach(candidate => {
+//         if (candidate < bestCandidate) { bestCandidate = candidate; }
+//     }
 
-    );
+//     );
 
-    if (bestCandidate != Infinity) {
-        if (slideData[bestCandidate].hasOwnProperty("logPageIdList")) {
-            let outData: string[] = slideData[bestCandidate]["logPageIdList"].split(",");
-            if (outData.length > 0 && outData[0] != "") {
-                return outData[0];
-            }
-        }
-    }
-    // basically fat ELSE return, because the function should break at this point.
-    return null;
+//     if (bestCandidate != Infinity) {
+//         if (slideData[bestCandidate].hasOwnProperty("logPageIdList")) {
+//             let outData: string[] = slideData[bestCandidate]["logPageIdList"].split(",");
+//             if (outData.length > 0 && outData[0] != "") {
+//                 return outData[0];
+//             }
+//         }
+//     }
+//     // basically fat ELSE return, because the function should break at this point.
+//     return null;
 
 
 
-}
+// }
 
 
 // function loadImageFromId(id: string) {}

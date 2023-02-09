@@ -27,15 +27,27 @@ function convertKiToSlide(entry: kiDataEntry) {
         year: '',
         logPageIdArray: [],
         receiptPageIdArray: [],
-        startPosition:0,
+        startPosition: 0,
+        slideIdList: '',
+        slideIdArray: []
     };
     for (let key in outEntry) {
         if (entry.hasOwnProperty(key)) {
             outEntry[key] = entry[key];
         }
     }
-    let receipts: string[] = outEntry.receiptPageIdList.trim().split(",");
-    let logPhotos: string[] = outEntry.logPageIdList.trim().split(",");
+    // let receipts: string[] = outEntry.receiptPageIdList.trim().split(",");
+    // let logPhotos: string[] = outEntry.logPageIdList.trim().split(",");
+    outEntry.receiptPageIdArray = outEntry.receiptPageIdList.trim().split(",");
+    outEntry.logPageIdArray = outEntry.logPageIdList.trim().split(",");
+    outEntry.slideIdArray = outEntry.slideIdList.trim().split(",")
+
+    if (Object.prototype.hasOwnProperty.call(entry, "currentSlidePositionList")) {
+        outEntry.currentSlidePositionList = entry["currentSlidePositionList"]
+        outEntry.currentSlidePositionArray = outEntry.currentSlidePositionList.split(",")
+    }
+
+
     return outEntry;
 }
 
@@ -200,10 +212,14 @@ function convertKiEntryToLogResponse(entry: kiDataEntry): logResponseEntry {
 interface slideDataEntry extends kiDataEntry {
     gasCard: number,
     startPosition:number,
-    logPageIdList: string,
-    receiptPageIdList: string,
+    logPageIdList: string, // comma-separated DriveApp file ids of pictures
+    receiptPageIdList: string, // comma-separated DriveApp file ids of pictures
     month: string,
     year: string | number,
-    logPageIdArray: string[],
-    receiptPageIdArray: string[],
+    logPageIdArray: string[], // array of DriveApp file ids of pictures
+    receiptPageIdArray: string[], // array of DriveApp file ids of pictures
+    slideIdList: string, // comma-separated slide ids
+    slideIdArray: string[], // array of slide ids
+    currentSlidePositionList?: string, // comma-separated numbers
+    currentSlidePositionArray?: number[] // array of numbers, stores position of slides
 }
