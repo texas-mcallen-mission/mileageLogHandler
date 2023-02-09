@@ -94,7 +94,9 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     //let postSlideId = getSlideToInsertBefore(targetPresentation, Number(responseData.gasCard), positionalIndex);
     // outEntry.startPosition = positionalIndex
 
-    let logSlides: GoogleAppsScript.Slides.Slide[] = [];
+    // part of the retrofit to let us sort things
+    let slideObjects: GoogleAppsScript.Slides.Slide[] = [];
+
     let logPages = outEntry.logPageIdList.trim().split(",");
     outEntry.logPageIdArray = logPages;
     let iterant = 0;
@@ -103,7 +105,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         let logSlide = createNewSlide(targetPresentation /*, postSlideId*/);
 
         logSlideEditor(logSlide, responseData, entry, iterant);
-
+        slideObjects.push(logSlide)
         iterant += 1;
         // , logSlides.length)
 
@@ -122,9 +124,9 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
         }
         let gasSlide = createNewSlide(targetPresentation/*, postSlideId*/);
         gasSlideEditor(gasSlide, responseData, entry1url, entry2url, i);
-
+        slideObjects.push(gasSlide)
     }
-    for (let slide of logSlides) {
+    for (let slide of slideObjects) {
         outEntry.slideIdArray.push(slide.getObjectId())
     }
     /*
