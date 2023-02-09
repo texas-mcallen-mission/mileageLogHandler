@@ -119,6 +119,7 @@ let datastoreConfig: sheetDataEntry = {
         month: 3,
         year: 4,
         slideIdList: 5,
-        currentSlidePositionList: 6
+        currentSlidePositionList: 6,
+        startPosition:7
     }
 };

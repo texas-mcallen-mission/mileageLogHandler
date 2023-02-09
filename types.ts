@@ -27,7 +27,7 @@ function convertKiToSlide(entry: kiDataEntry) {
         year: '',
         logPageIdArray: [],
         receiptPageIdArray: [],
-        startPosition: 0,
+        // startPosition: 0,5
         slideIdList: '',
         slideIdArray: []
     };
@@ -36,12 +36,16 @@ function convertKiToSlide(entry: kiDataEntry) {
             outEntry[key] = entry[key];
         }
     }
+
     // let receipts: string[] = outEntry.receiptPageIdList.trim().split(",");
     // let logPhotos: string[] = outEntry.logPageIdList.trim().split(",");
     outEntry.receiptPageIdArray = outEntry.receiptPageIdList.trim().split(",");
     outEntry.logPageIdArray = outEntry.logPageIdList.trim().split(",");
     outEntry.slideIdArray = outEntry.slideIdList.trim().split(",")
 
+    if (Object.prototype.hasOwnProperty.call(entry, "startPosition")) {
+        outEntry.startPosition = +entry["startPosition"]
+    }
     if (Object.prototype.hasOwnProperty.call(entry, "currentSlidePositionList")) {
         outEntry.currentSlidePositionList = entry["currentSlidePositionList"]
         const outStrings = outEntry.currentSlidePositionList.split(",")
@@ -216,7 +220,7 @@ function convertKiEntryToLogResponse(entry: kiDataEntry): logResponseEntry {
 
 interface slideDataEntry extends kiDataEntry {
     gasCard: number,
-    startPosition:number,
+    startPosition?:number,
     logPageIdList: string, // comma-separated DriveApp file ids of pictures
     receiptPageIdList: string, // comma-separated DriveApp file ids of pictures
     month: string,
