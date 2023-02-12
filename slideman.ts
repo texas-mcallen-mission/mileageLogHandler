@@ -102,7 +102,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     let iterant = 0;
     for (let entry of logPages) {
 
-        let logSlide = createNewSlide(targetPresentation /*, postSlideId*/);
+        let logSlide = createNewSlide_(targetPresentation /*, postSlideId*/);
 
         logSlideEditor(logSlide, responseData, entry, iterant);
         slideObjects.push(logSlide)
@@ -122,7 +122,7 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
             entry2url = receiptPics[i + 1];
 
         }
-        let gasSlide = createNewSlide(targetPresentation/*, postSlideId*/);
+        let gasSlide = createNewSlide_(targetPresentation/*, postSlideId*/);
         gasSlideEditor(gasSlide, responseData, entry1url, entry2url, i);
         slideObjects.push(gasSlide)
     }
@@ -137,71 +137,22 @@ function addSlidesForEntry(responseData: logResponseEntry, targetPresentation: G
     return outEntry;
 
 }
-function createNewSlide(targetPresentation: GoogleAppsScript.Slides.Presentation /*, preSlide: string | null*/): GoogleAppsScript.Slides.Slide {
-    let outSlide: GoogleAppsScript.Slides.Slide;
-    // if (preSlide != null) {
-    //     outSlide = targetPresentation.insertSlide(+preSlide);
-    // } else {
-    outSlide = targetPresentation.appendSlide();
-    // }
 
-    // outSlide.insertTextBox(outSlide.getObjectId(), 10, 10,2000,200)
+/**
+ * @description This originally did more stuff but doesn't anymore because we made sorting external b/c it's cheap
+ * @param {GoogleAppsScript.Slides.Presentation} targetPresentation
+ * @return {*}  {GoogleAppsScript.Slides.Slide}
+ */
+function createNewSlide_(targetPresentation: GoogleAppsScript.Slides.Presentation): GoogleAppsScript.Slides.Slide {
+    let outSlide: GoogleAppsScript.Slides.Slide;
+    outSlide = targetPresentation.appendSlide();
     return outSlide;
 }
 
-// function buildPositionalIndex(data: kiDataEntry[], keyToBaseOffOf: string): positionalIndex {
-//     let output: positionalIndex = {};
-//     for (let i = 0; i > data.length; i++) {
-//         if (data[i].hasOwnProperty(keyToBaseOffOf) && +data[i][keyToBaseOffOf] != -1) {
-//             output[+data[i][keyToBaseOffOf]] = data[i];
-//         }
-//     }
-//     return output;
-// }
 
-// function getSlideToInsertBefore(presentation: GoogleAppsScript.Slides.Presentation, position: number, slideData: positionalIndex): string | null {
-
-//     // thanks to this guy for this little conversion
-//     // https://bobbyhadz.com/blog/javascript-convert-array-of-strings-to-array-of-numbers#:~:text=To%20convert%20an%20array%20of,new%20array%20containing%20only%20numbers.
-//     let keys = Object.keys(slideData).map(str => {
-//         return Number(str);
-//     });
-
-//     let bestCandidate = Infinity;
-
-//     // and thanks to these people for this part:
-//     // https://stackoverflow.com/questions/54554384/get-closest-but-higher-number-in-an-array
-
-//     //get rid of everything bigger (or smaller???)
-//     // TODO greater than or equal to?  Need to test with two of the same gas card for certainty,  kinda depends on if I want second entries before or after the first ones
-//     const higherCandidates = keys.filter(candidate => candidate > position);
-
-//     // loop through numbers and checks to see if next number is less bigger but still bigger
-
-//     higherCandidates.forEach(candidate => {
-//         if (candidate < bestCandidate) { bestCandidate = candidate; }
-//     }
-
-//     );
-
-//     if (bestCandidate != Infinity) {
-//         if (slideData[bestCandidate].hasOwnProperty("logPageIdList")) {
-//             let outData: string[] = slideData[bestCandidate]["logPageIdList"].split(",");
-//             if (outData.length > 0 && outData[0] != "") {
-//                 return outData[0];
-//             }
-//         }
-//     }
-//     // basically fat ELSE return, because the function should break at this point.
-//     return null;
-
-
-
-// }
-
-
-// function loadImageFromId(id: string) {}
-
+/**
+ * Which way is the sheet going?
+ */
 enum orientEnum {
     landscape,
     portrait
@@ -236,6 +187,24 @@ function getInfoString(responseData) {
     }
     return infoString;
 }
+
+function createGasCardNumber(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry,sL:slideLayoutData):GoogleAppsScript.Slides.Shape {
+    const width = 100
+    const height = 100
+    let infoBox = gasSlide.insertTextBox(String(responseData.card_number))
+    infoBox.setWidth(width)
+    infoBox.setHeight(height)
+    infoBox.setTop(sL.borderPx)
+    // aligns it to the far edge minus the hard-coded width and the border margin thingy.
+    infoBox.setLeft(sL.width - width - sL.borderPx)
+    let test = infoBox.getText().getTextStyle()
+    test.setFontSize(30)
+    test.setFontFamily("Inconsolata")
+
+    return infoBox
+
+
+}
 function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry, imageUrl1: string, imageUrl2: string | null, index: number) {
     // Step 1: Add Photo
 
@@ -262,6 +231,7 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     // TODO: CREATE TABLE OF RECEIPT DATES AND COSTS
     //@ts-ignore : JSFiddle says +null has a typeof "number", which is good enough for me
 
+    const gasCardNumber = createGasCardNumber(gasSlide, responseData, sL)
 
     let infoBox = gasSlide.insertTextBox(infoString, sL.borderPx, sL.borderPx, infoBoxData.width, infoBoxData.height);
     // console.log(gasSlide.getLayout());
@@ -271,10 +241,10 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     let receiptString1: string = "";
     let receiptString2: string = "";
     let existentReceipts: number = 0;
-    let receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"];
-    let receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"];
-    let maxReceiptsOneBox = 6; // 1-indexed
-    for (let i = 0; i < receiptCostKeys.length; i++) {
+    const receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"];
+    const receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"];
+    const maxReceiptsOneBox = 6; // 1-indexed
+    for (const i = 0; i < receiptCostKeys.length; i++) {
         let output: string = "";
         let hasEntry = false;
         if (responseData.hasOwnProperty(receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
@@ -302,25 +272,25 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     }
 
 
-    let receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx * 2, sL.borderPx, receiptBoxData.width, receiptBoxData.height);
+    const receiptBox = gasSlide.insertTextBox(receiptString1, infoBoxData.width + sL.borderPx * 2, sL.borderPx, receiptBoxData.width, receiptBoxData.height);
 
     if (receiptString2 != "") {
         let xPos = infoBoxData.width + receiptBoxData.width + sL.borderPx * 3;
         let receiptBox2 = gasSlide.insertTextBox(receiptString2, xPos, sL.borderPx, receiptBoxData.width, receiptBoxData.height);
     }
 
-    let textMaxHeight = Math.max(infoBoxData.height, receiptBoxData.height);
+    const textMaxHeight = Math.max(infoBoxData.height, receiptBoxData.height);
 
-    let imageHeight = (sL.height - (textMaxHeight + 4 * sL.borderPx)) / 2;
-    let top1 = textMaxHeight + sL.borderPx * 2;
-    let top2 = textMaxHeight + sL.borderPx * 3 + imageHeight;
+    const imageHeight = (sL.height - (textMaxHeight + 4 * sL.borderPx)) / 2;
+    const top1 = textMaxHeight + sL.borderPx * 2;
+    const top2 = textMaxHeight + sL.borderPx * 3 + imageHeight;
 
 
     if (imageUrl1) {
         try {
-            let imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1));
+            const imageBlob1 = getImageBlobFromID(getIdFromUrl_(imageUrl1));
             if (imageBlob1) {
-                let photo1 = gasSlide.insertImage(imageBlob1);
+                const photo1 = gasSlide.insertImage(imageBlob1);
                 alignImage(photo1, orientEnum.landscape, sL, top1, imageHeight);
             }
             
@@ -331,9 +301,9 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     if (imageUrl2) {
         try {
-            let imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2));
+            const imageBlob2 = getImageBlobFromID(getIdFromUrl_(imageUrl2));
             if (imageBlob2) {
-                let photo2 = gasSlide.insertImage(imageBlob2);
+                const photo2 = gasSlide.insertImage(imageBlob2);
                 alignImage(photo2, orientEnum.landscape, sL, top2, imageHeight);
             }
             
@@ -365,7 +335,7 @@ function logSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
         width: sL.width - 2 * sL.borderPx,
         height: 100
     };
-
+    const gasCardNumber = createGasCardNumber(gasSlide, responseData, sL)
     let infoBox = gasSlide.insertTextBox(infoString, 10, 10, infoBoxData.width, infoBoxData.height);
     // console.log(gasSlide.getLayout())
 

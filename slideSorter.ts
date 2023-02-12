@@ -47,7 +47,9 @@ function sortSlides() {
         "year",
         "month"
     ]
-    
+    // sorting works... ONCE
+    // It may be that it assigns object ids based on position, which would make sense and also be really annoying
+    // this is annoying because it means that the sorter can basically only be run one time, and after that, the object id data is useless
     const outData = sortData.groupDataByMultipleKeys(splitKeys)
 
     // since we grouped this by year, then month, this will give us an array of kiDataEntries stored at data[year][month]
