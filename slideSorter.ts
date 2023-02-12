@@ -14,12 +14,12 @@
 
 
 /**
- * @description
+ * @description returns a SlidesApp Slide given an object ID string for one.
  * @param {GoogleAppsScript.Slides.Presentation} presentation
  * @param {string} objectId
  * @return {*}  {GoogleAppsScript.Slides.Slide}
  */
-function getSlideFromObjectID(presentation: GoogleAppsScript.Slides.Presentation, objectId: string): GoogleAppsScript.Slides.Slide {
+function getSlideFromObjectID_(presentation: GoogleAppsScript.Slides.Presentation, objectId: string): GoogleAppsScript.Slides.Slide {
     let output = presentation.getSlideById(objectId);
     return output;
 }
@@ -80,7 +80,7 @@ function sortSlides() {
             }
             
             for (let i = 0; i < slidePositions.length;i++) {
-                const slide = getSlideFromObjectID(presentationObj, slidePositions[i])
+                const slide = getSlideFromObjectID_(presentationObj, slidePositions[i])
                 slide.move(i+1)
             }
 

@@ -189,8 +189,8 @@ function getInfoString(responseData) {
 }
 
 function createGasCardNumber(gasSlide: GoogleAppsScript.Slides.Slide, responseData: logResponseEntry,sL:slideLayoutData):GoogleAppsScript.Slides.Shape {
-    const width = 100
-    const height = 100
+    const width = 50
+    const height = 50
     let infoBox = gasSlide.insertTextBox(String(responseData.card_number))
     infoBox.setWidth(width)
     infoBox.setHeight(height)
