@@ -68,8 +68,8 @@ function photoUpdater(): void {
 
             let gas_pic_urls: string[] = response.gas_pics.split(",");
             let log_pic_urls: string[] = response.log_pics.split(",");
-            let gas_iterant: number = 1;
-            let log_iterant: number = 1;
+            let gas_iterant = 1;
+            let log_iterant = 1;
             // GR for gas, LB for log books
             let new_gas_urls: string[] = [];
             let new_log_urls: string[] = [];

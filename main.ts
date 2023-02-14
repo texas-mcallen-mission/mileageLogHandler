@@ -349,15 +349,15 @@ interface cacheData {
 }
 
 class doubleCacheLock {
-    prefix: string = "SLIDEMAN_CACHE";
-    primaryStr: string = "Lock1";
-    secondaryStr: string = "Lock2";
-    maxLineKey: string = "maxLine";
+    prefix = "SLIDEMAN_CACHE";
+    primaryStr = "Lock1";
+    secondaryStr = "Lock2";
+    maxLineKey = "maxLine";
     cacheObj: GoogleAppsScript.Cache.Cache;
     expiration: number = 30 * 60; // 30 minutes * 60 seconds each
     debug = true;
 
-    constructor(prefixMod: string = "NONE") {
+    constructor(prefixMod = "NONE") {
         if (prefixMod != "NONE") {
             this.prefix += prefixMod;
         }
