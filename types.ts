@@ -32,7 +32,7 @@ function convertKiToSlide(entry: kiDataEntry) {
         slideIdArray: []
     };
     for (let key in outEntry) {
-        if (entry.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(entry,key)) {
             outEntry[key] = entry[key];
         }
     }
@@ -204,7 +204,7 @@ function convertKiEntryToLogResponse(entry: kiDataEntry): logResponseEntry {
         imos_mileage: '',
     };
     for (let key in outData) {
-        if (entry.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(entry,key)) {
             outData[key] = entry[key];
         }
         if (key == "has_forgiveness") {

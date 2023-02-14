@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 
 
 
@@ -11,7 +12,7 @@ interface cacheEntry {
 
 function updateAreaNames() {
     let formURL = config.response_form_url
-    if (GITHUB_SECRET_DATA.hasOwnProperty("response_form_url")) {
+    if (Object.prototype.hasOwnProperty.call(GITHUB_SECRET_DATA,"response_form_url")) {
         formURL = GITHUB_SECRET_DATA.response_form_url
     }
 
@@ -148,12 +149,12 @@ function runUpdates(): void {
             }
 
             // adding in IMOS data
-            if (contactDataKeyed.hasOwnProperty(response.area_name)) {
+            if (Object.prototype.hasOwnProperty.call(contactDataKeyed,response.area_name)) {
                 // console.log(contactDataKeyed)
                 let areaInfo = contactDataKeyed[response.area_name][0];
                 // copies the data from contactData to the keys used by this one to store the same values
                 for (let key in contactData_keymap) {
-                    if (areaInfo.hasOwnProperty(contactData_keymap[key])) {
+                    if (Object.prototype.hasOwnProperty.call(areaInfo,contactData_keymap[key])) {
                         let data = areaInfo[contactData_keymap[key]];
                         response[key] = data;
                         IMOS_output[key] = data;
@@ -169,7 +170,7 @@ function runUpdates(): void {
 
             let presentationString = String(response.report_year) + response.report_month;
             let presentation: GoogleAppsScript.Slides.Presentation;
-            if (presentationCache.hasOwnProperty(presentationString)) {
+            if (Object.prototype.hasOwnProperty.call(presentationCache,presentationString)) {
                 presentation = presentationCache[presentationString];
             } else {
                 presentation = getLogbook(response.report_year, response.report_month);
@@ -258,7 +259,7 @@ function TEST_removeSmaller() {
     let kiData = new kiDataClass(data);
     kiData.removeSmaller("testKey", 4);
     let outData = kiData.end;
-    if (outData.length = 3) {
+    if (outData.length == 3) {
         console.log("Removal Worked!");
     } else {
         throw new Error("Removal failed!");
@@ -455,14 +456,14 @@ class doubleCacheLock {
 function getBaseFolder(): GoogleAppsScript.Drive.Folder {
     let photoKey = "photoArchive_FolderID";
     // let baseFolderId;
-    if (GITHUB_SECRET_DATA.hasOwnProperty(photoKey) && GITHUB_SECRET_DATA[photoKey] != "") {
+    if (Object.prototype.hasOwnProperty.call(GITHUB_SECRET_DATA,photoKey) && GITHUB_SECRET_DATA[photoKey] != "") {
         try {
             let outFolder = DriveApp.getFolderById(GITHUB_SECRET_DATA[photoKey]);
             return outFolder;
         } catch (error) {
             console.log("basefolder not specified / functional in github secrets");
         }
-    } else if (config.hasOwnProperty(photoKey) && config[photoKey] != "") {
+    } else if (Object.prototype.hasOwnProperty.call(config,photoKey) && config[photoKey] != "") {
         try {
             let outFolder = DriveApp.getFolderById(config[photoKey])
             return outFolder

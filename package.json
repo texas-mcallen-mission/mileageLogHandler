@@ -1,12 +1,13 @@
 {
-  "name": "mileageLogHandler",
-  "dependencies": {
-    "@types/google-apps-script": "^1.0.55"
-  },
-  "devDependencies": {
-    "eslint": "^8.34.0",
-    "typedoc": "^0.23.25",
-    "typedoc-plugin-markdown": "^3.14.0",
-    "typescript-eslint": "^0.0.1-alpha.0"
-  }
+    "name": "mileageloghandler",
+    "dependencies": {
+        "@types/google-apps-script": "^1.0.55"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.48.2",
+        "@typescript-eslint/parser": "^5.48.2",
+        "eslint": "^8.32.0",
+        "typedoc": "^0.23.24",
+        "typedoc-plugin-markdown": "^3.14.0"
+    }
 }

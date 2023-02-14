@@ -1,5 +1,5 @@
 
-let config = {
+const config = {
     disableMarkingPulled: false,
     softCutoffInMinutes: 25,
     debug_mode: false,
@@ -8,7 +8,7 @@ let config = {
     photoArchive_FolderID:""
 };
 
-let contactConfig: sheetDataEntry = {
+const contactConfig: sheetDataEntry = {
     tabName: "Contact Data",
     headerRow: 0,
     includeSoftcodedColumns: true,
@@ -40,7 +40,7 @@ let contactConfig: sheetDataEntry = {
 };
 
 // make sure to update the interface in types as well!
-let responseConfig: sheetDataEntry = {
+const responseConfig: sheetDataEntry = {
     tabName: "Responses",
     headerRow: 0,
     includeSoftcodedColumns: true,
@@ -108,7 +108,7 @@ const sheetCoreConfig: sheetCoreConfigInfo = {
 
 };
 
-let datastoreConfig: sheetDataEntry = {
+const datastoreConfig: sheetDataEntry = {
     tabName: "sortStore",
     headerRow: 0,
     includeSoftcodedColumns: true,
