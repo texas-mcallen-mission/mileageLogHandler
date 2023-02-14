@@ -238,13 +238,14 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
 
     // Generates the receipt date:cost informations
     // groups into two batches of 6 receipts per box
+
     let receiptString1: string = "";
     let receiptString2: string = "";
     let existentReceipts: number = 0;
     const receiptDateKeys: string[] = ["rp_1", "rp_2", "rp_3", "rp_4", "rp_5", "rp_6", "rp_7", "rp_8", "rp_9", "rp_10", "rp_11", "rp_12"];
     const receiptCostKeys: string[] = ["rc_1", "rc_2", "rc_3", "rc_4", "rc_5", "rc_6", "rc_7", "rc_8", "rc_9", "rc_10", "rc_11", "rc_12"];
     const maxReceiptsOneBox = 6; // 1-indexed
-    for (const i = 0; i < receiptCostKeys.length; i++) {
+    for (let i = 0; i < receiptCostKeys.length; i++) {
         let output: string = "";
         let hasEntry = false;
         if (Object.prototype.hasOwnProperty.call(responseData,receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
@@ -505,7 +506,7 @@ function getLogbook(year: string | number, month: string): GoogleAppsScript.Slid
     }
     // if it's not there, we create a template
     // if there isn't a template, then we just make a slide anyways.
-    if (GITHUB_SECRET_DATA.hasOwnProperty("template_id")) {
+    if (Object.prototype.hasOwnProperty.call(GITHUB_SECRET_DATA,"template_id")) {
         try {
             let template = DriveApp.getFileById(GITHUB_SECRET_DATA["template_id"]);
             // let template = Drive.getF()

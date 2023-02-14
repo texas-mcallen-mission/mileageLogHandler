@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 
 
 
@@ -258,7 +259,7 @@ function TEST_removeSmaller() {
     let kiData = new kiDataClass(data);
     kiData.removeSmaller("testKey", 4);
     let outData = kiData.end;
-    if (outData.length = 3) {
+    if (outData.length == 3) {
         console.log("Removal Worked!");
     } else {
         throw new Error("Removal failed!");
