@@ -247,13 +247,13 @@ function gasSlideEditor(gasSlide: GoogleAppsScript.Slides.Slide, responseData: l
     for (const i = 0; i < receiptCostKeys.length; i++) {
         let output: string = "";
         let hasEntry = false;
-        if (responseData.hasOwnProperty(receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
+        if (Object.prototype.hasOwnProperty.call(responseData,receiptDateKeys[i]) && responseData[receiptDateKeys[i]] != "") {
             let dateObj = new Date(responseData[receiptDateKeys[i]]);
             let formattedString: string = (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" + dateObj.getFullYear();
             output += formattedString + ": ";
             hasEntry = true;
         }
-        if (responseData.hasOwnProperty(receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
+        if (Object.hasOwnProperty.call(responseData,receiptCostKeys[i]) && responseData[receiptCostKeys[i]] != "") {
             output += "$ " + Number(responseData[receiptCostKeys[i]]).toFixed(2);
             hasEntry = true;
         } else if (hasEntry) {
