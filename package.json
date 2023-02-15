@@ -1,13 +1,26 @@
 {
-    "name": "mileageloghandler",
-    "dependencies": {
-        "@types/google-apps-script": "^1.0.55"
-    },
-    "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^5.48.2",
-        "@typescript-eslint/parser": "^5.48.2",
-        "eslint": "^8.32.0",
-        "typedoc": "^0.23.24",
-        "typedoc-plugin-markdown": "^3.14.0"
-    }
+  "name": "mileageloghandler",
+  "dependencies": {
+    "@types/google-apps-script": "^1.0.55"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
+    "eslint": "^8.32.0",
+    "typedoc": "^0.23.24",
+    "typedoc-plugin-markdown": "^3.14.0"
+  },
+  "description": "Every month, missionaries in our mission have to report the number of miles they used and how much money they spent on fuel.  This includes pictures and other stuff that become a huge pain to manage for our fleet manager guy.  This system automates converting photos submitted via Google Forms into a document that nicely and neatly arranges photos and gets everything nice and orderly.  Also requires basically zero maintenance once online.",
+  "version": "1.0.0",
+  "main": "main.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/texas-mcallen-mission/mileageLogHandler.git"
+  },
+  "author": "harrierpigeon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/texas-mcallen-mission/mileageLogHandler/issues"
+  },
+  "homepage": "https://github.com/texas-mcallen-mission/mileageLogHandler#readme"
 }
