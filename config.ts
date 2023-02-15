@@ -1,5 +1,5 @@
 
-const config = {
+const config:configOptions = {
     disableMarkingPulled: false,
     softCutoffInMinutes: 25,
     debug_mode: false,
@@ -7,6 +7,16 @@ const config = {
     areaNameQuestion: "Area Name",
     photoArchive_FolderID:""
 };
+
+interface configOptions {
+    disableMarkingPulled: boolean;
+    // enable_cacheLock: boolean;
+    softCutoffInMinutes: number;
+    debug_mode: boolean;
+    response_form_url: string;
+    areaNameQuestion: string;
+    photoArchive_FolderID:string
+}
 
 const contactConfig: sheetDataEntry = {
     tabName: "Contact Data",

@@ -46,10 +46,17 @@ function updateAreaNames() {
     
 }
 
+
+function mergeConfigs(): configOptions {
+    const output = { ...config, ...GITHUB_SECRET_DATA };
+    return output;
+}
+
 function runUpdates(): void {
+    const liveConfig = mergeConfigs()
     // store start time for logging, also to make sure we don't overrun execution time.
     let startTime = new Date();
-    let softCutoffInMinutes = config.softCutoffInMinutes;
+    let softCutoffInMinutes = liveConfig.softCutoffInMinutes;
     // step zero: cachelock - make sure we can actually run :)
     let locker = new doubleCacheLock();
     let minRow = 0;
@@ -119,32 +126,20 @@ function runUpdates(): void {
         "imos_mileage": "vehicleMiles",
         "combined_names": "combinedNames"
     };
-    // for (let rawResponse of responseData.data) {
-    //     let response = convertKiEntryToLogResponse(rawResponse)
-    //     if (test.hasOwnProperty(response.area_name)) {
-    //         let areaInfo = test[response.area_name]
 
-    //         for (let key in keymap) {
-    //             if (areaInfo.hasOwnProperty(keymap[key])) {
-    //                 response[key] = areaInfo[keymap[key]]
-    //             }
-    //         }
-    //     }
-    // }
-
-
+    
     let slideData: slideDataEntry[] = convertKisToSlideEntries(sortStoreRSD.getData());
     let newData: slideDataEntry[] = [];
-    // let initialIndex = buildPositionalIndex(slideDataObj.end, "keyToBaseOffOf")
-
+    
     let presentationCache: manyPresentations = {};
 
 
     for (let rawResponse of responseData.data) {
         if (checkTime_(startTime, softCutoffInMinutes)) {
+            // Make sure we're not going to run out of time and crash and burn.
             let response: logResponseEntry = convertKiEntryToLogResponse(rawResponse);
             let IMOS_output: kiDataEntry = {};
-            if (!config.disableMarkingPulled) {
+            if (!liveConfig.disableMarkingPulled) {
                 IMOS_output["pulled"] = true;
             }
 
@@ -197,7 +192,7 @@ function runUpdates(): void {
         // entry *might* need an offset.
         // JUMPER comment
         // let output:any[] = [true]
-        if (config.disableMarkingPulled == true) {
+        if (liveConfig.disableMarkingPulled == true) {
             data["pulled"] = [GITHUB_DATA.commit_sha.slice(0, 8) + "WORD"];
         }
         // responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
