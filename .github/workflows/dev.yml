@@ -3,7 +3,7 @@ name: dev branch
 on:
   workflow_dispatch:
   push:
-    branches: [sorting-updates]
+    branches: [crud-updates]
   release:
     types: [published]
   schedule:
