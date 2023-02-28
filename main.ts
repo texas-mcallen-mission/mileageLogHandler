@@ -189,19 +189,7 @@ function runUpdates(): void {
 
     // this is a lot better than the hackery below that got it working in the first place.
     responseSheet.updateRows(imos_data)
-    // let column = responseSheet.getIndex("pulled");
-    // for (let i = 0; i < pulledRows.length; i++) {
-    //     let targetRow = pulledRows[i];
-    //     let data = rowData[i];
-    //     // entry *might* need an offset.
-    //     // JUMPER comment
-    //     // let output:any[] = [true]
-    //     if (liveConfig.disableMarkingPulled == true) {
-    //         data["pulled"] = [GITHUB_DATA.commit_sha.slice(0, 8) + "WORD"];
-    //     }
-    //     // responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
-    //     responseSheet.directModify(targetRow + 1, data);
-    // }
+
 
 
     if (!isSecondary) {
