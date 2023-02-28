@@ -62,7 +62,7 @@ function runUpdates(): void {
     let minRow = 0;
     let isSecondary = false;
     // double-cachelock
-    if (locker.isPrimaryLocked) {
+    if (locker.isPrimaryLocked && liveConfig.debug_mode) {
         if (locker.isSecondaryLocked) {
             console.error("Full lockout detected, exiting!");
             return; // Should kill the program.
@@ -163,7 +163,6 @@ function runUpdates(): void {
 
             // and now to the rest of the stuff.
 
-
             let presentationString = String(response.report_year) + response.report_month;
             let presentation: GoogleAppsScript.Slides.Presentation;
             if (Object.prototype.hasOwnProperty.call(presentationCache,presentationString)) {
@@ -178,7 +177,7 @@ function runUpdates(): void {
             newData.push(newSlides);
             pulledRows.push(rawResponse[iterantKey]);
             // update to use new CRUD stuff
-            imos_data.push(imos_data)
+            imos_data.push(IMOS_output)
             // rowData.push(IMOS_output);
         } else {
             break;
