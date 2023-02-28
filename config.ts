@@ -54,6 +54,7 @@ const responseConfig: sheetDataEntry = {
     tabName: "Responses",
     headerRow: 0,
     includeSoftcodedColumns: true,
+    use_iterant:true,
     initialColumnOrder: {
         timestamp: 0,
         area_name: 1,
@@ -122,6 +123,7 @@ const datastoreConfig: sheetDataEntry = {
     tabName: "sortStore",
     headerRow: 0,
     includeSoftcodedColumns: true,
+    use_iterant: true,
     initialColumnOrder: {
         gasCard: 0,
         logPageIdList: 1,
