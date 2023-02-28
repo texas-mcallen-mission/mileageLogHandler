@@ -178,7 +178,7 @@ function runUpdates(): void {
             newData.push(newSlides);
             pulledRows.push(rawResponse[iterantKey]);
             // update to use new CRUD stuff
-            IMOS_output.push(imos_data)
+            imos_data.push(imos_data)
             // rowData.push(IMOS_output);
         } else {
             break;
