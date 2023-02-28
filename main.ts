@@ -47,13 +47,13 @@ function updateAreaNames() {
 }
 
 
-function mergeConfigs(): configOptions {
+function mergeConfigs_(): configOptions {
     const output = { ...config, ...GITHUB_SECRET_DATA };
     return output;
 }
 
 function runUpdates(): void {
-    const liveConfig = mergeConfigs()
+    const liveConfig = mergeConfigs_()
     // store start time for logging, also to make sure we don't overrun execution time.
     let startTime = new Date();
     let softCutoffInMinutes = liveConfig.softCutoffInMinutes;
