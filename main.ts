@@ -47,13 +47,13 @@ function updateAreaNames() {
 }
 
 
-function mergeConfigs(): configOptions {
+function mergeConfigs_(): configOptions {
     const output = { ...config, ...GITHUB_SECRET_DATA };
     return output;
 }
 
 function runUpdates(): void {
-    const liveConfig = mergeConfigs()
+    const liveConfig = mergeConfigs_()
     // store start time for logging, also to make sure we don't overrun execution time.
     let startTime = new Date();
     let softCutoffInMinutes = liveConfig.softCutoffInMinutes;
@@ -62,7 +62,7 @@ function runUpdates(): void {
     let minRow = 0;
     let isSecondary = false;
     // double-cachelock
-    if (locker.isPrimaryLocked) {
+    if (locker.isPrimaryLocked && liveConfig.debug_mode) {
         if (locker.isSecondaryLocked) {
             console.error("Full lockout detected, exiting!");
             return; // Should kill the program.
@@ -80,11 +80,9 @@ function runUpdates(): void {
     }
     // load up sheetData
 
-        // let responseRSD = new RawSheetData(responseConfig);
+    // setting up sheets
     const responseSheet = new SheetData(new RawSheetData(responseConfig));
-        // let datastoreRSD = new RawSheetData(datastoreConfig);
-    const sortStoreRSD = new SheetData(new RawSheetData(datastoreConfig));
-    // let contactRSD = new RawSheetData(contactConfig);
+    const sortStoreSheet = new SheetData(new RawSheetData(datastoreConfig));
     const contactSheet = new SheetData(new RawSheetData(contactConfig));
 
     const rawResponses = responseSheet.getData();
@@ -110,8 +108,10 @@ function runUpdates(): void {
         responseData.removeSmaller(iterantKey, minRow);
     }
     let pulledRows: number[] = [];
-    let rowData: kiDataEntry[] = [];
+    // let rowData: kiDataEntry[] = [];
 
+    const itkey = responseSheet.iterantKey
+    const imos_data: kiDataEntry[] = []
 
 
     let contactDataClass = new kiDataClass(contactSheet.getData());
@@ -128,7 +128,7 @@ function runUpdates(): void {
     };
 
     
-    let slideData: slideDataEntry[] = convertKisToSlideEntries(sortStoreRSD.getData());
+    let slideData: slideDataEntry[] = convertKisToSlideEntries(sortStoreSheet.getData());
     let newData: slideDataEntry[] = [];
     
     let presentationCache: manyPresentations = {};
@@ -159,9 +159,9 @@ function runUpdates(): void {
                 console.error("unable to find data for " + response.area_name);
             }
 
+            IMOS_output[itkey] = rawResponse[itkey]
 
             // and now to the rest of the stuff.
-
 
             let presentationString = String(response.report_year) + response.report_month;
             let presentation: GoogleAppsScript.Slides.Presentation;
@@ -176,28 +176,20 @@ function runUpdates(): void {
             slideData.push(newSlides);
             newData.push(newSlides);
             pulledRows.push(rawResponse[iterantKey]);
-            rowData.push(IMOS_output);
+            // update to use new CRUD stuff
+            imos_data.push(IMOS_output)
+            // rowData.push(IMOS_output);
         } else {
             break;
         }
     }
 
 
-    sortStoreRSD.insertData(newData);
+    sortStoreSheet.insertData(newData);
 
-    let column = responseSheet.getIndex("pulled");
-    for (let i = 0; i < pulledRows.length; i++) {
-        let targetRow = pulledRows[i];
-        let data = rowData[i];
-        // entry *might* need an offset.
-        // JUMPER comment
-        // let output:any[] = [true]
-        if (liveConfig.disableMarkingPulled == true) {
-            data["pulled"] = [GITHUB_DATA.commit_sha.slice(0, 8) + "WORD"];
-        }
-        // responseSheet.directEdit(entry + 1, column, [output], true); // directEdit is zero-Indexed even though sheets is 1-indexed.
-        responseSheet.directModify(targetRow + 1, data);
-    }
+    // this is a lot better than the hackery below that got it working in the first place.
+    responseSheet.updateRows(imos_data)
+
 
 
     if (!isSecondary) {
