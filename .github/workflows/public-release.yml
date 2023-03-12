@@ -1,0 +1,27 @@
+name: Mileage Log Public Release
+# Copy this one into your own repository- change up the things your secrets reference if necessary, and run!
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  schedule:
+    - cron: "0 0 * * SUN"
+
+jobs:
+  clasp-update-aio:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Call Reusable Action
+      uses: texas-mcallen-mission/deploy-google-app-script-action-typescript/@v3.0.1
+      with:
+        CLASP_TOKEN_VALUE: ${{ secrets.CLASPRC_JSON }}
+        CLASP_TOKEN_NAME: 'CLASPRC_JSON'
+        REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+        USES_ORG_SECRET: true # optional.
+        ORG_VISIBILITY: all # optional, default all.
+        SCRIPT_ID: ${{ secrets.SCRIPT_ID_PUBLIC }}
+        PARENT_ID: ${{ secrets.PARENT_ID_PUBLIC }} # optional.
+        DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }} # optional.
+        CONFIG_DATA: ${{ secrets.CONFIG_DATA_PUBLIC }} # optional.
