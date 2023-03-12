@@ -1,17 +1,12 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 
-
-
-
-
-
 interface cacheEntry {
     active: boolean,
     lastUpdate: number;
 }
 
 function importContacts() {
-    let contactSheet = new SheetData(new RawSheetData(contactConfig));
+    let contactSheet : SheetData = new SheetData(new RawSheetData(contactConfig));
     importContactsV2(contactSheet);
 }
 
