@@ -10,6 +10,12 @@ interface cacheEntry {
     lastUpdate: number;
 }
 
+function importContacts() {
+    let contactSheet = new SheetData(new RawSheetData(contactConfig));
+    importContactsV2(contactSheet);
+}
+
+
 function updateAreaNames() {
     let formURL = config.response_form_url
     if (Object.prototype.hasOwnProperty.call(GITHUB_SECRET_DATA,"response_form_url")) {

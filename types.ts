@@ -232,3 +232,62 @@ interface slideDataEntry extends kiDataEntry {
     currentSlidePositionList?: string, // comma-separated numbers
     currentSlidePositionArray?: number[] // array of numbers, stores position of slides
 }
+
+function convertKiEntryToLogResponseEntry_(data: kiDataEntry) : logResponseEntry {
+    let output: logResponseEntry = {
+        timestamp: '',
+        email: '',
+        pulled: false,
+        report_month: '',
+        report_year: '',
+        area_name: '',
+        areaId: '',
+        car_year: '',
+        car_make: '',
+        car_model: '',
+        car_lpn: '',
+        car_vin_five: '',
+        card_number: '',
+        odo_start: 0,
+        odo_end: 0,
+        mile_sum: 0,
+        has_forgiveness: false,
+        qty_forgiveness: false,
+        forgive_types: '',
+        rp_1: '',
+        rc_1: 0,
+        rp_2: '',
+        rc_2: 0,
+        rp_3: '',
+        rc_3: 0,
+        rp_4: '',
+        rc_4: 0,
+        rp_5: '',
+        rc_5: 0,
+        rp_6: '',
+        rc_6: 0,
+        rp_7: '',
+        rc_7: 0,
+        rp_8: '',
+        rc_8: 0,
+        rp_9: '',
+        rc_9: 0,
+        rp_10: '',
+        rc_10: 0,
+        rp_11: '',
+        rc_11: 0,
+        rp_12: '',
+        rc_12: 0,
+        gas_pics: '',
+        log_pics: '',
+        has_stored_pics: false,
+        stored_gas_pics: '',
+        stored_log_pics: '',
+        combined_names: '',
+        zone: '',
+        imos_vin: '',
+        imos_mileage: ''
+    };
+    output = { ...output, ...data };
+    return output;
+}
